@@ -3,14 +3,14 @@ package com.championsita.menus.menueleccion;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.championsita.Principal;
+import com.championsita.menus.herramientas.ConfigCliente;
 import com.championsita.menus.menuprincipal.GestorInputMenu;
 import com.championsita.menus.menuprincipal.Inicial;
 import com.championsita.menus.menuprincipal.Menu;
 import com.championsita.menus.compartido.Assets;
 import com.championsita.menus.menucarga.Campo;
 import com.championsita.menus.menuprincipal.RenderizadorDeMenu;
-import com.championsita.partida.herramientas.Config;
-import com.championsita.partida.ControladorDePartida;
+
 
 /**
  * Menú de selección para un solo jugador:
@@ -180,15 +180,16 @@ public class UnJugador extends Menu {
 
         // OK → construir config y entrar directo a la partida
         if (gestorMenu.condicionDentro(x, y, super.siguienteSprite)) {
-            Config cfg = new Config.Builder()
+            ConfigCliente cfg = new ConfigCliente.Builder()
                     .agregarSkin(skinP1)
                     .agregarSkin(skinP2)
-                    .campo(campos[idxCampo])      // requerido
+                    .campo(String.valueOf(campos[idxCampo]))      // requerido
                     // goles y tiempo quedan con defaults del builder (UNO / CORTO)
                     .modo(modoDestino == null ? "practica" : modoDestino)
                     .build();
 
-            super.juego.actualizarPantalla(new ControladorDePartida(cfg));
+            //super.juego.actualizarPantalla(new ControladorDePartida(cfg));
+
             return true;
         }
 

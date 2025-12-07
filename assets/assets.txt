@@ -12,6 +12,7 @@ campos/campoVerdeOscuro.png
 cursor.mp3
 fondoBarraStamina.png
 fondoChampionsita.png
+fuentes/Gixel.ttf
 futebol.mp3
 interiorBarraStamina.png
 jugador/amarillo/Jugador.png

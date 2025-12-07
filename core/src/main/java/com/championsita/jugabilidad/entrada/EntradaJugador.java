@@ -3,20 +3,16 @@ package com.championsita.jugabilidad.entrada;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.championsita.Principal;
-import com.championsita.jugabilidad.modelo.Personaje;
 import com.championsita.menus.menucarga.Carga;
 import com.championsita.menus.menueleccion.Doble;
 
 public class EntradaJugador implements InputProcessor {
 
-    private final Personaje personaje;
-
     private final int keyArriba, keyAbajo, keyIzquierda, keyDerecha, keyAccion, keySprint;
 
     private boolean arriba, abajo, izquierda, derecha, espacioPresionado, sprintPresionado;
 
-    public EntradaJugador(Personaje personaje, int arriba, int abajo, int izquierda, int derecha, int accion, int sprint) {
-        this.personaje = personaje;
+    public EntradaJugador(int arriba, int abajo, int izquierda, int derecha, int accion, int sprint) {
         this.keyArriba = arriba;
         this.keyAbajo = abajo;
         this.keyIzquierda = izquierda;
@@ -50,8 +46,7 @@ public class EntradaJugador implements InputProcessor {
     }
 
     public void actualizar(float delta) {
-        personaje.actualizarEstadoJugador(arriba, abajo, izquierda, derecha, sprintPresionado, delta);
-        personaje.setEspacioPresionado(espacioPresionado);
+
     }
 
     // Métodos no usados

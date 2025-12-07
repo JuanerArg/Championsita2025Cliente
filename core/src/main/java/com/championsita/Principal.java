@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.championsita.menus.menuprincipal.Inicial;
 import com.championsita.menus.menuprincipal.Menu;
+import com.championsita.red.HiloCliente;
 
 public class Principal extends Game {
 
@@ -15,6 +16,7 @@ public class Principal extends Game {
     private float volumenMusica;
     private int indiceMusica;
     private Color accionColor;
+    public HiloCliente cliente;
 
     @Override
     public void create() {

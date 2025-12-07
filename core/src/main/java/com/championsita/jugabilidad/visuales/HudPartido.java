@@ -1,58 +1,34 @@
 package com.championsita.jugabilidad.visuales;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.championsita.jugabilidad.constantes.Constantes;
+import com.championsita.red.EstadoPartidaCliente;
 import com.championsita.jugabilidad.herramientas.Texto;
-import com.championsita.jugabilidad.sistemas.SistemaPartido;
 
 public class HudPartido {
 
-    private int posYContador = 750;
-    private Viewport viewPort;
-    private Texto texto;
+    private final Texto marcadorRojo;
+    private final Texto marcadorAzul;
+    private final Texto tiempo;
 
-    public HudPartido(Viewport viewport) {
-        this.viewPort = viewport;
-        this.texto = new Texto(
-                Constantes.fuente1,
-                32,
-                Color.WHITE,
-                0.5f,
-                Color.BLACK
-        );
+    public HudPartido() {
+        marcadorRojo = new Texto(Constantes.fuente1, 40, com.badlogic.gdx.graphics.Color.RED);
+        marcadorAzul = new Texto(Constantes.fuente1, 40, com.badlogic.gdx.graphics.Color.BLUE);
+        tiempo       = new Texto(Constantes.fuente1, 32, com.badlogic.gdx.graphics.Color.WHITE);
+
+        marcadorRojo.setPosition(50, 680);
+        marcadorAzul.setPosition(1180, 680);
+        tiempo.setPosition(600, 680);
     }
 
-    public void dibujarHud(SpriteBatch batch, SistemaPartido sistemaPartido) {
+    public void dibujarHud(SpriteBatch batch, EstadoPartidaCliente est) {
+        marcadorRojo.setTexto("" + est.golesRojo);
+        marcadorAzul.setTexto("" + est.golesAzul);
 
-        int puntajeEquipo1 = sistemaPartido.getNotadorEquipo1();
-        int puntajeEquipo2 = sistemaPartido.getNotadorEquipo2();
+        tiempo.setTexto(String.format("%.1f", est.tiempo));
 
-        int x = Gdx.graphics.getWidth()/2 - (int)(texto.getAncho()/2);
-        int y = Gdx.graphics.getHeight() - 40;
-
-        texto.setPosition(x, y);
-
-        texto.setTexto(puntajeEquipo1 + "-" + puntajeEquipo2);
-
-        texto.dibujar(batch);
-
-
-
-
-
+        marcadorRojo.dibujar(batch);
+        marcadorAzul.dibujar(batch);
+        tiempo.dibujar(batch);
     }
-
-
-
-
-
-
-
-
-
-
 }

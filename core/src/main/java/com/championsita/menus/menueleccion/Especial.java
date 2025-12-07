@@ -1,13 +1,15 @@
 package com.championsita.menus.menueleccion;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.championsita.Principal;
-import com.championsita.jugabilidad.modelo.Equipo;
-import com.championsita.jugabilidad.modelo.HabilidadesEspeciales;
+import com.championsita.jugabilidad.constantes.Constantes;
+import com.championsita.jugabilidad.herramientas.HabilidadesEspeciales;
+import com.championsita.jugabilidad.herramientas.Texto;
 import com.championsita.menus.menucarga.Carga;
 import com.championsita.menus.menuprincipal.GestorInputMenu;
 import com.championsita.menus.menuprincipal.Inicial;
@@ -29,8 +31,8 @@ public class Especial extends Menu {
     private JugadorDos[] skinsJ2;
     private int indiceSkinJ1;
     private int indiceSkinJ2;
-    private Equipo equipoJ1 = Equipo.ROJO;
-    private Equipo equipoJ2 = Equipo.AZUL;
+    private String equipoJ1 = "ROJO";
+    private String equipoJ2 = "Azul";
 
 
     // Habilidades
@@ -39,7 +41,7 @@ public class Especial extends Menu {
     private int indiceHabJ2 = 0;
 
     // Texto y dibujado
-    private BitmapFont font;
+    Texto texto1, texto2;
     private ShapeRenderer shapeRenderer;
 
     // Gestores
@@ -61,8 +63,8 @@ public class Especial extends Menu {
         Gdx.gl.glClearColor(1, 1, 1, 1);  // blanco total
 
 
-        font = new BitmapFont();
-        font.getData().setScale(1.8f);
+        texto1 = new Texto(Constantes.fuente1, 20, Color.BLACK);
+        texto2 = new Texto(Constantes.fuente1, 20, Color.BLACK);
         shapeRenderer = new ShapeRenderer();
 
         // ===============================
@@ -174,10 +176,13 @@ public class Especial extends Menu {
         // =========================
         // Dibujar texto (habilidad actual)
         // =========================
-        font.setColor(0, 0, 0, 1);
 
-        font.draw(super.batch, habilidades[indiceHabJ1].getNombre(), 250, 130);
-        font.draw(super.batch, habilidades[indiceHabJ2].getNombre(), 640, 130);
+        texto1.setTexto(habilidades[indiceHabJ1].getNombre());
+        texto1.setPosition(250, 130);
+        texto1.dibujar(super.batch);
+        texto2.setTexto(habilidades[indiceHabJ2].getNombre());
+        texto2.setPosition(640, 130);
+        texto2.dibujar(super.batch);
 
         super.batch.end();
     }
@@ -252,6 +257,5 @@ public class Especial extends Menu {
     public void dispose() {
         if (shapeRenderer != null) shapeRenderer.dispose();
         shapeRenderer = null;
-        font = null;
     }
 }

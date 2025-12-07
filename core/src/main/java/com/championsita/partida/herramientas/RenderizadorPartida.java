@@ -4,19 +4,29 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.championsita.jugabilidad.modelo.Cancha;
-import com.championsita.jugabilidad.sistemas.SistemaPartido;
+import com.championsita.jugabilidad.visuales.DibujadorCancha;
 import com.championsita.jugabilidad.visuales.DibujadorJugador;
 import com.championsita.jugabilidad.visuales.DibujadorPelota;
 import com.championsita.jugabilidad.visuales.HudPartido;
-import com.championsita.partida.modosdejuego.ModoDeJuego;
-import com.championsita.partida.modosdejuego.implementaciones.Practica;
+import com.championsita.red.EstadoPartidaCliente;
 
 import java.util.ArrayList;
 
 public class RenderizadorPartida {
 
-    public void renderFondo(SpriteBatch batch, FitViewport viewport, Cancha cancha) {
+    private EstadoPartidaCliente estadoPartida;
+
+    public void setEstado(EstadoPartidaCliente estado) {
+        this.estadoPartida = estado;
+    }
+
+    // ======================
+    //  FONDO / CANCHA
+    // ======================
+    public void renderFondo(SpriteBatch batch,
+                            FitViewport viewport,
+                            DibujadorCancha cancha) {
+
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
@@ -25,64 +35,64 @@ public class RenderizadorPartida {
         batch.end();
     }
 
+    // ======================
+    //  ENTIDADES
+    // ======================
     public void renderEntidades(SpriteBatch batch,
                                 FitViewport viewport,
-                                ArrayList<DibujadorJugador> dibujadoresJugadores,
-                                DibujadorPelota dibPelota, ModoDeJuego modoDeJuego) {
+                                ArrayList<DibujadorJugador> jugadores,
+                                DibujadorPelota dibPelota,
+                                String modo) {
 
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
         batch.begin();
 
-        if(modoDeJuego.getClass() != Practica.class){
-            for (DibujadorJugador dib : dibujadoresJugadores) {
-                dib.dibujar(batch);
+        // Jugadores
+        if (modo.equalsIgnoreCase("practica")) {
+            for (DibujadorJugador dj : jugadores) {
+                dj.dibujarJugador(batch);
             }
-        }else {
-            dibujadoresJugadores.get(0).dibujar(batch);
+        } else {
+            jugadores.get(0).dibujarJugador(batch);
         }
 
-        dibPelota.dibujar(batch);
+        // Pelota
+        dibPelota.dibujarPelota(batch);
 
         batch.end();
     }
 
-    public void renderHudModo(SpriteBatch batch,
-                              ModoDeJuego modoJuego,
-                              FitViewport viewport) {
-
-        viewport.apply();
-        batch.setProjectionMatrix(viewport.getCamera().combined);
-
-        batch.begin();
-        modoJuego.renderizar(batch);
-        batch.end();
-    }
-
+    // ======================
+    //  HUD DEL PARTIDO
+    // ======================
     public void renderHudPartido(SpriteBatch batch,
                                  HudPartido hud,
-                                 SistemaPartido datosDelPartido,
-                                 int pantallaAncho,
-                                 int pantallaAlto) {
+                                 int ancho,
+                                 int alto) {
 
-        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(
-                0, 0,
-                pantallaAncho,
-                pantallaAlto
-        ));
+        // HUD en coordenadas de pantalla
+        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, ancho, alto));
 
         batch.begin();
-        hud.dibujarHud(batch, datosDelPartido);
+        if (estadoPartida != null)
+            hud.dibujarHud(batch, estadoPartida);
         batch.end();
     }
 
-    public void renderArcos(ShapeRenderer renderer, FitViewport viewport, Cancha cancha) {
+    // ======================
+    //  ARCOS
+    // ======================
+    public void renderArcos(ShapeRenderer renderer,
+                            FitViewport viewport,
+                            DibujadorCancha cancha) {
+
+        viewport.apply();
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
-        cancha.getArcoDerecho().dibujar(renderer);
-        cancha.getArcoIzquierdo().dibujar(renderer);
+        cancha.dibujarArcos(renderer);
         renderer.end();
     }
 }

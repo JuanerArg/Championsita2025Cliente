@@ -4,8 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.championsita.Principal;
+import com.championsita.menus.EnLinea.EnLinea;
 import com.championsita.menus.local.Local;
-import com.championsita.menus.compartido.Assets;
+import com.championsita.menus.menuopcion.Opcion;
+import com.championsita.partida.herramientas.PantallaEsperandoServidor;
 
 public class Inicial extends Menu {
 
@@ -96,7 +98,7 @@ public class Inicial extends Menu {
     private void cambiarMenu(int i) {
         switch (i) {
             case 0: {
-                // ONLINE (pendiente)
+                super.juego.actualizarPantalla(new PantallaEsperandoServidor(super.juego));
                 break;
             }
             case 1: {

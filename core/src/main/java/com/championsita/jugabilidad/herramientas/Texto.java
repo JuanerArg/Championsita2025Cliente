@@ -58,6 +58,11 @@ public class Texto {
         this.y=y;
     }
 
+    public void setPosition(float x, float y){
+        this.x= (int) x;
+        this.y= (int) y;
+    }
+
     public int getX() {
         return x;
     }

@@ -7,8 +7,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.audio.Sound;
 import com.championsita.Principal;
-import com.championsita.jugabilidad.modelo.Equipo;
-import com.championsita.jugabilidad.modelo.HabilidadesEspeciales;
+import com.championsita.jugabilidad.herramientas.HabilidadesEspeciales;
+import com.championsita.menus.herramientas.ConfigCliente;
 import com.championsita.menus.menuprincipal.GestorInputMenu;
 import com.championsita.menus.menuprincipal.Menu;
 import com.championsita.menus.menueleccion.Doble;
@@ -16,22 +16,22 @@ import com.championsita.menus.compartido.Assets;
 import com.championsita.menus.compartido.OpcionDeGoles;
 import com.championsita.menus.compartido.OpcionDeTiempo;
 import com.championsita.menus.menuprincipal.RenderizadorDeMenu;
-import com.championsita.partida.herramientas.Config;
-import com.championsita.partida.ControladorDePartida;
+import com.championsita.partida.herramientas.PantallaEsperandoServidor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Carga extends Menu {
 
-    // Ahora soporta equipos especiales
-    private Equipo equipoJ1;
-    private Equipo equipoJ2;
+    private String equipoJ1;
+    private String equipoJ2;
 
     private SpriteBatch batch;
     private final String pielJugador1;
     private final String pielJugador2;
+
     private ArrayList<HabilidadesEspeciales> habilidades = new ArrayList<>();
     private final String modo; // "1v1", "practica", "especial"
 
@@ -81,29 +81,26 @@ public class Carga extends Menu {
     private static final float CAMPOS_ALTURA    = 200f;
     private static final float FLECHA_OFFSET    = 5f;
 
-    // Gestores
     private GestorInputMenu gestorMenu;
     private RenderizadorDeMenu renderizador;
 
-    // Constructor normal (1v1 / practica)
+    // Constructor normal
     public Carga(Principal juego, String pielUno, String pielDos, String modo) {
         super(juego);
         this.pielJugador1 = pielUno;
         this.pielJugador2 = pielDos;
         this.modo = (modo == null ? "1v1" : modo);
-
-        // En modos normales no hay equipo
         this.equipoJ1 = null;
         this.equipoJ2 = null;
     }
 
-    // Constructor especial (2J especial con equipos)
+    // Constructor con equipos
     public Carga(Principal juego,
                  String skinJ1,
                  String skinJ2,
                  String modoDestino,
-                 Equipo equipoJ1,
-                 Equipo equipoJ2) {
+                 String equipoJ1,
+                 String equipoJ2) {
 
         this(juego, skinJ1, skinJ2, modoDestino);
         this.equipoJ1 = equipoJ1;
@@ -114,14 +111,13 @@ public class Carga extends Menu {
                  String skinJ1,
                  String skinJ2,
                  String modoDestino,
-                 Equipo equipoJ1,
-                 Equipo equipoJ2,
+                 String equipoJ1,
+                 String equipoJ2,
                  ArrayList<HabilidadesEspeciales> habilidades) {
-        this(juego, skinJ1, skinJ2, modoDestino);
 
+        this(juego, skinJ1, skinJ2, modoDestino);
         this.equipoJ1 = equipoJ1;
         this.equipoJ2 = equipoJ2;
-
         this.habilidades.addAll(habilidades);
     }
 
@@ -196,7 +192,6 @@ public class Carga extends Menu {
 
         Gdx.input.setInputProcessor(this);
 
-        // Gestores
         gestorMenu = new GestorInputMenu(this);
         renderizador = new RenderizadorDeMenu(this);
     }
@@ -271,31 +266,35 @@ public class Carga extends Menu {
         }
 
         // ============================
-        // BOTÓN JUGAR — ARMAMOS CONFIG
+        // BOTÓN JUGAR → ARMAMOS CONFIG
         // ============================
         if (hit(super.siguienteSprite, x, y)) {
 
-            Config.Builder builder =
-                    new Config.Builder()
+            // Convertimos habilidades a String
+            List<String> habilidadesStr = habilidades.stream()
+                    .map(Enum::name)
+                    .toList();
+
+            ConfigCliente.Builder builder =
+                    new ConfigCliente.Builder()
                             .agregarSkin(pielJugador1)
                             .agregarSkin(pielJugador2)
-                            .campo(listaCampos[indiceCampo])
-                            .goles(mapGoles(opcionesGoles[indiceGoles]))
-                            .tiempo(mapTiempo(opcionesTiempo[indiceTiempo]))
+                            .campo(listaCampos[indiceCampo].getNombre())     // STRING
+                            .goles(opcionesGoles[indiceGoles])                // INT
+                            .tiempo(opcionesTiempo[indiceTiempo])            // INT
                             .modo(this.modo);
 
-            // SOLO si viene de Modo Especial: agrega equipos
-            if(this.modo.equals("especial")){
-                if (equipoJ1 != null && equipoJ2 != null) {
-                    builder.agregarEquipo(equipoJ1);
-                    builder.agregarEquipo(equipoJ2);
-                }
-                builder.agregarHabilidades(habilidades);
+            if (this.modo.equals("especial")) {
+                if (equipoJ1 != null) builder.agregarEquipo(equipoJ1);
+                if (equipoJ2 != null) builder.agregarEquipo(equipoJ2);
+                builder.agregarHabilidades(habilidadesStr);
             }
 
+            ConfigCliente config = builder.build();
 
-            Config config = builder.build();
-            super.juego.actualizarPantalla(new ControladorDePartida(config));
+            juego.cliente.enviarConfig(config);
+            juego.setScreen(new PantallaEsperandoServidor(super.juego));
+
             return true;
         }
 
@@ -318,12 +317,15 @@ public class Carga extends Menu {
     }
 
     private Texture getCampoTexture(String nombre) {
-        return cacheCampos.computeIfAbsent(nombre, n -> Assets.tex("campos/campo" + n + ".png"));
+        return cacheCampos.computeIfAbsent(nombre, n ->
+                Assets.tex("campos/campo" + n + ".png"));
     }
 
     private boolean hit(Sprite s, int x, int y) {
-        float sx = s.getX(), sy = s.getY(), sw = s.getWidth(), sh = s.getHeight();
-        return x >= sx && x <= sx + sw && y >= sy && y <= sy + sh;
+        return x >= s.getX() &&
+                x <= s.getX() + s.getWidth() &&
+                y >= s.getY() &&
+                y <= s.getY() + s.getHeight();
     }
 
     private void updateFlechaHover(Sprite flecha, int x, int y, boolean izquierda) {
@@ -341,21 +343,7 @@ public class Carga extends Menu {
         this.controlJugador2.setPosition(xDos, y);
     }
 
-    private OpcionDeGoles mapGoles(int valor) {
-        return switch (valor) {
-            case 1 -> OpcionDeGoles.UNO;
-            case 3 -> OpcionDeGoles.TRES;
-            case 5 -> OpcionDeGoles.CINCO;
-            default -> OpcionDeGoles.UNO;
-        };
-    }
-
-    private OpcionDeTiempo mapTiempo(int cod) {
-        return switch (cod) {
-            case 1 -> OpcionDeTiempo.CORTO;
-            case 2 -> OpcionDeTiempo.MEDIO;
-            case 3 -> OpcionDeTiempo.LARGO;
-            default -> OpcionDeTiempo.CORTO;
-        };
-    }
+    // OJO: estas dos referencias las tenés que resolver en tu proyecto:
+    // - cliente: instancia de tu HiloCliente o lo que uses para la red
+    // - mostrarPantallaDeEspera(): cambiar a la pantalla que corresponda
 }
