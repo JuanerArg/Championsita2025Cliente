@@ -44,6 +44,10 @@ public class Principal extends Game {
         }
     }
 
+    public void volverAlMenuPrincipal(){
+        actualizarPantalla(new Inicial(this));
+    }
+
     @Override
     public void dispose() {
         this.batch.dispose();

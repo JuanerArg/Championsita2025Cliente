@@ -4,10 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.championsita.Principal;
-import com.championsita.menus.EnLinea.EnLinea;
+import com.championsita.menus.EnLinea.MenuEnLinea;
 import com.championsita.menus.local.Local;
 import com.championsita.menus.menuopcion.Opcion;
 import com.championsita.partida.herramientas.PantallaEsperandoServidor;
+import com.championsita.red.EstadoCliente;
 
 public class Inicial extends Menu {
 

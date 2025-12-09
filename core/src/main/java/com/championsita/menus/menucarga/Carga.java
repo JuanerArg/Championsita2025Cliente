@@ -292,8 +292,8 @@ public class Carga extends Menu {
 
             ConfigCliente config = builder.build();
 
-            juego.cliente.enviarConfig(config);
-            juego.setScreen(new PantallaEsperandoServidor(super.juego));
+            //juego.cliente.enviarConfig(config);
+            //juego.setScreen(new PantallaEsperandoServidor(super.juego));
 
             return true;
         }

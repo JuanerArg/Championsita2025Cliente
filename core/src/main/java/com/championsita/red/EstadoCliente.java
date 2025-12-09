@@ -6,4 +6,5 @@ public enum EstadoCliente {
     CONECTANDO,
     CONECTADO,
     PERDIDA_CONEXION,
+    CONEXION_ESTABLECIDA
 }

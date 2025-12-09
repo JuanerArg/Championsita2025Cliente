@@ -10,9 +10,10 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.championsita.Principal;
 import com.championsita.jugabilidad.constantes.Constantes;
 import com.championsita.jugabilidad.herramientas.Texto;
-import com.championsita.menus.EnLinea.EnLinea;
+import com.championsita.menus.EnLinea.MenuEnLinea;
 import com.championsita.red.HiloCliente;
-import com.championsita.red.EstadoCliente;
+
+import static com.championsita.red.EstadoCliente.CONEXION_ESTABLECIDA;
 
 public class PantallaEsperandoServidor implements Screen {
 
@@ -35,8 +36,9 @@ public class PantallaEsperandoServidor implements Screen {
         this.texto = new Texto(Constantes.fuente1, 32, Color.WHITE, 2f, Color.BLACK);
 
         // Crear y arrancar cliente en thread separado
-        this.cliente = new HiloCliente(juego);
-        this.cliente.start();
+        cliente = new HiloCliente(juego);
+        cliente.start();
+
 
         this.texto.setTexto("Buscando servidor...");
         texto.setPosition(
@@ -89,12 +91,11 @@ public class PantallaEsperandoServidor implements Screen {
                         Gdx.graphics.getWidth()/4 - (int)(texto.getAncho()),
                         Gdx.graphics.getHeight()/4 - (int)(texto.getAlto())
                 );
-                texto.setTexto("Conectado!\nCargando partida...");
-                timerReintento += delta;
+                texto.setTexto("Conectado!\nEsperando Contrincante...");
+                break;
 
-                if (timerReintento >= 0.5f) {
-                    juego.setScreen(new EnLinea(this.juego));
-                }
+            case CONEXION_ESTABLECIDA:
+                this.juego.setScreen(new MenuEnLinea(this.juego, this.cliente));
                 break;
 
             case PERDIDA_CONEXION:
