@@ -2,31 +2,35 @@ package com.championsita.red;
 
 import com.badlogic.gdx.Gdx;
 import com.championsita.Principal;
-import com.championsita.menus.EnLinea.CargaOnlineCampo;
-import com.championsita.menus.EnLinea.CargaOnlineSkin;
 import com.championsita.menus.EnLinea.MenuEnLinea;
-import com.championsita.menus.herramientas.ConfigCliente;
+
 import java.net.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class HiloCliente extends Thread {
 
+    // ====================================================
+    // CAMPOS PRINCIPALES
+    // ====================================================
     private DatagramSocket socket;
     private InetSocketAddress servidor;
     private InetAddress broadcast;
 
     private final AtomicLong ultimoPong = new AtomicLong(0);
+
     public volatile EstadoCliente estado = EstadoCliente.DESCONECTADO;
     public EstadoPartidaCliente estadoActual;
+
     private boolean fin = false;
-
     private Principal juego;
-
-    // Pantalla del lobby actualmente visible
-    private LobbySync pantallaActual = null;
+    private LobbySync pantallaLobby = null;
 
     private static final long TIMEOUT_MS = 3000;
 
+
+    // ====================================================
+    // CONSTRUCTOR
+    // ====================================================
     public HiloCliente(Principal juego) {
         this.juego = juego;
         try {
@@ -37,168 +41,200 @@ public class HiloCliente extends Thread {
         }
     }
 
+
     // ====================================================
-    // Permite a cada pantalla registrarse como pantalla actual
+    // API LOBBY
     // ====================================================
-    public void setPantallaActual(LobbySync pantalla) {
-        this.pantallaActual = pantalla;
+    public void setLobbyPantalla(LobbySync pantalla) {
+        this.pantallaLobby = pantalla;
     }
 
+
+    // ====================================================
+    // LOOP PRINCIPAL
+    // ====================================================
     @Override
     public void run() {
 
-        buscarServidor();
+        intentarEncontrarServidor();
         if (estado == EstadoCliente.DESCONECTADO) return;
 
-        conectar();
+        intentarConectarAlServidor();
 
-        loopRecepcion();
+        loopRecepcionYKeepAlive();
     }
 
+
     // ====================================================
-    // ENVIAR MENSAJES
+    // ENVÍO GENERAL
     // ====================================================
     public void enviar(String msg) {
         try {
             byte[] data = msg.getBytes();
             DatagramPacket p = new DatagramPacket(
                     data, data.length,
-                    servidor.getAddress(), servidor.getPort()
+                    servidor.getAddress(),
+                    servidor.getPort()
             );
             socket.send(p);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
+
     // ====================================================
-    // PROCESAR RESPUESTAS DEL SERVIDOR
+    // PROCESAMIENTO DE MENSAJES
     // ====================================================
     private void procesar(DatagramPacket dp) {
-
         String msg = new String(dp.getData(), 0, dp.getLength()).trim();
-        System.out.println("[CLIENTE] " + msg);
 
-        // ---------------------------
-        // Handshake
-        // ---------------------------
-        if (msg.equals("Conectado")) {
-            estado = EstadoCliente.CONECTADO;
-            return;
+        if (procesarHandshake(msg)) return;
+        if (procesarLobbySync(msg)) return;
+        if (procesarEstadoPartida(msg)) return;
+        if (procesarKeepAlive(msg)) return;
+        if (procesarDesconexion(msg)) return;
+    }
+
+    // ------------------------------
+    // HANDSHAKE
+    // ------------------------------
+    private boolean procesarHandshake(String msg) {
+
+        switch (msg) {
+            case "Conectado":
+                estado = EstadoCliente.CONECTADO;
+                return true;
+
+            case "conexion_establecida":
+                abrirLobby();
+                return true;
         }
 
-        if (msg.equals("conexion_establecida")) {
+        return false;
+    }
 
-            Gdx.app.postRunnable(() -> {
-                MenuEnLinea lobby = new MenuEnLinea(juego, this);
-                juego.setScreen(lobby);
-                setPantallaActual(lobby);
-            });
+    private void abrirLobby() {
+        Gdx.app.postRunnable(() -> {
+            MenuEnLinea lobby = new MenuEnLinea(juego, this);
+            juego.actualizarPantalla(lobby);
+            setLobbyPantalla(lobby);
+        });
+    }
 
-            return;
-        }
+    // ------------------------------
+    // SINCRONIZACIÓN DE LOBBY
+    // ------------------------------
+    private boolean procesarLobbySync(String msg) {
+        if (pantallaLobby == null) return false;
 
-
-        // ---------------------------
-        // Sincronización de lobby
-        // ---------------------------
         if (msg.startsWith("SKIN_RIVAL=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarSkinRival(msg.substring(11)));
-            return;
+            actualizarUI(() -> pantallaLobby.aplicarSkinRival(msg.substring(11)));
+            return true;
+        }
+
+        if (msg.startsWith("READY_MODE")){
+            boolean ready = msg.endsWith("1");
+            actualizarUI(() -> pantallaLobby.aplicarReadyRival(ready));
+            return true;
         }
 
         if (msg.startsWith("READY_SKIN=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarReadyRival(msg.endsWith("1")));
-            return;
+            boolean ready = msg.endsWith("1");
+            actualizarUI(() -> pantallaLobby.aplicarReadyRival(ready));
+            System.out.println(msg);
+            return true;
         }
 
         if (msg.startsWith("CFG_CAMPO=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarCampoRival(msg.substring(10)));
-            return;
+            actualizarUI(() -> pantallaLobby.aplicarCampoRival(msg.substring(10)));
+            return true;
         }
 
         if (msg.startsWith("CFG_GOLES=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarGolesRival(Integer.parseInt(msg.substring(10))));
-            return;
+            int goles = parseEntero(msg, 10);
+            actualizarUI(() -> pantallaLobby.aplicarGolesRival(goles));
+            return true;
         }
 
         if (msg.startsWith("CFG_TIEMPO=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarTiempoRival(Integer.parseInt(msg.substring(11))));
-            return;
+            int tiempo = parseEntero(msg, 11);
+            actualizarUI(() -> pantallaLobby.aplicarTiempoRival(tiempo));
+            return true;
         }
 
         if (msg.startsWith("CFG_MODO=")) {
-            if (pantallaActual != null)
-                Gdx.app.postRunnable(() ->pantallaActual.aplicarModoRival(msg.substring(9)));
-            return;
+            actualizarUI(() -> pantallaLobby.aplicarModoRival(msg.substring(9)));
+            return true;
         }
 
-        // ---------------------------
-        // Comienzo de la partida
-        // ---------------------------
-        if (msg.equals("PARTIDA_INICIADA")) {
-            //aca pondriamos para recibir lo que tenemos que mostrar
-            return;
-        }
-
-        // ---------------------------
-        // ACTUALIZACIÓN DE PARTIDA
-        // ---------------------------
-        if (msg.startsWith("STATE;")) {
-            procesarEstadoPartida(msg.substring(6));
-            return;
-        }
-
-        // ---------------------------
-        // Rival desconectado
-        // ---------------------------
-        if (msg.startsWith("PLAYER_DISCONNECTED")) {
-            Gdx.app.postRunnable(() -> juego.volverAlMenuPrincipal());
-            return;
-        }
-
-        // ---------------------------
-        // Pong
-        // ---------------------------
-        if (msg.equals("PONG")) {
-            ultimoPong.set(System.currentTimeMillis());
-            return;
-        }
+        return false;
     }
 
-    // ====================================================
+
+    // ------------------------------
     // ESTADO DE PARTIDA
-    // ====================================================
-    private void procesarEstadoPartida(String msg) {
-        // NO LO TOCO — ya lo hiciste vos
-        // Solo lo llamo acá
+    // ------------------------------
+    private boolean procesarEstadoPartida(String msg) {
+
+        if (msg.equals("PARTIDA_INICIADA")) return true;
+
+        if (msg.startsWith("STATE;")) {
+            procesarEstadoPartidaInterno(msg.substring(6));
+            return true;
+        }
+
+        return false;
     }
 
+    private void procesarEstadoPartidaInterno(String contenido) {
+        //
+    }
+
+
+    // ------------------------------
+    // KEEP ALIVE
+    // ------------------------------
+    private boolean procesarKeepAlive(String msg) {
+        if (!msg.equals("PONG")) return false;
+
+        ultimoPong.set(System.currentTimeMillis());
+        return true;
+    }
+
+
+    // ------------------------------
+    // DESCONEXIÓN
+    // ------------------------------
+    private boolean procesarDesconexion(String msg) {
+        if (!msg.equals("PLAYER_DISCONNECTED")) return false;
+
+        actualizarUI(() -> juego.volverAlMenuPrincipal());
+        return true;
+    }
+
+
     // ====================================================
-    // BÚSQUEDA DEL SERVIDOR
+    // BUSCAR SERVIDOR
     // ====================================================
-    private void buscarServidor() {
+    private void intentarEncontrarServidor() {
         estado = EstadoCliente.BUSCANDO_SERVIDOR;
 
-        try { broadcast = obtenerBroadcast(); }
-        catch (Exception e) { estado = EstadoCliente.DESCONECTADO; return; }
+        try {
+            broadcast = obtenerBroadcast();
+        } catch (Exception e) {
+            estado = EstadoCliente.DESCONECTADO;
+            return;
+        }
 
         for (int i = 0; i < 5; i++) {
             try {
                 enviarBroadcast("Hello_There");
-
                 socket.setSoTimeout(800);
-                byte[] buf = new byte[256];
-                DatagramPacket resp = new DatagramPacket(buf, buf.length);
-                socket.receive(resp);
 
-                if (new String(resp.getData(), 0, resp.getLength()).trim().equals("General_Kenobi")) {
-                    servidor = new InetSocketAddress(resp.getAddress(), resp.getPort());
+                DatagramPacket respuesta = recibirPaquete(256);
+                if (respuesta == null) continue;
+
+                if (new String(respuesta.getData(), 0, respuesta.getLength()).trim().equals("General_Kenobi")) {
+                    servidor = new InetSocketAddress(respuesta.getAddress(), respuesta.getPort());
                     estado = EstadoCliente.CONECTANDO;
                     return;
                 }
@@ -209,16 +245,19 @@ public class HiloCliente extends Thread {
         estado = EstadoCliente.DESCONECTADO;
     }
 
+
     private void enviarBroadcast(String msg) throws Exception {
         byte[] data = msg.getBytes();
         DatagramPacket p = new DatagramPacket(data, data.length, broadcast, 4321);
         socket.send(p);
     }
 
+
     // ====================================================
-    // CONECTAR
+    // CONEXIÓN FORMAL
     // ====================================================
-    private void conectar() {
+    private void intentarConectarAlServidor() {
+
         if (estado != EstadoCliente.CONECTANDO) return;
 
         for (int i = 0; i < 5; i++) {
@@ -226,9 +265,9 @@ public class HiloCliente extends Thread {
 
             try {
                 socket.setSoTimeout(1000);
-                byte[] buffer = new byte[256];
-                DatagramPacket p = new DatagramPacket(buffer, buffer.length);
-                socket.receive(p);
+
+                DatagramPacket p = recibirPaquete(256);
+                if (p == null) continue;
 
                 if (new String(p.getData(), 0, p.getLength()).trim().equals("Conectado")) {
                     estado = EstadoCliente.CONECTADO;
@@ -242,28 +281,25 @@ public class HiloCliente extends Thread {
         estado = EstadoCliente.DESCONECTADO;
     }
 
+
     // ====================================================
-    // LOOP
+    // LOOP RECEPCIÓN + PING
     // ====================================================
-    private void loopRecepcion() {
+    private void loopRecepcionYKeepAlive() {
 
         while (!fin) {
 
-            if (estado == EstadoCliente.CONECTADO &&
-                    (System.currentTimeMillis() - ultimoPong.get()) > TIMEOUT_MS) {
-                estado = EstadoCliente.PERDIDA_CONEXION;
-            }
+            verificarTimeout();
 
             try {
                 socket.setSoTimeout(200);
-                byte[] buffer = new byte[1024];
-                DatagramPacket dp = new DatagramPacket(buffer, buffer.length);
-                socket.receive(dp);
 
-                procesar(dp);
+                DatagramPacket dp = recibirPaquete(1024);
+                if (dp != null) procesar(dp);
 
-            } catch (SocketTimeoutException ignored) {}
-            catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             if (estado == EstadoCliente.CONECTADO ||
                     estado == EstadoCliente.CONEXION_ESTABLECIDA) {
@@ -272,12 +308,40 @@ public class HiloCliente extends Thread {
         }
     }
 
+    private void verificarTimeout() {
+        if (estado == EstadoCliente.CONECTADO &&
+                (System.currentTimeMillis() - ultimoPong.get()) > TIMEOUT_MS) {
+            estado = EstadoCliente.PERDIDA_CONEXION;
+        }
+    }
+
+
     // ====================================================
-    // UTILS
+    // HELPERS
     // ====================================================
+    private DatagramPacket recibirPaquete(int size) {
+        try {
+            byte[] buffer = new byte[size];
+            DatagramPacket dp = new DatagramPacket(buffer, buffer.length);
+            socket.receive(dp);
+            return dp;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void actualizarUI(Runnable r) {
+        Gdx.app.postRunnable(r);
+    }
+
+    private int parseEntero(String msg, int offset) {
+        return Integer.parseInt(msg.substring(offset));
+    }
+
     private InetAddress obtenerBroadcast() throws SocketException {
         for (NetworkInterface ni : java.util.Collections.list(NetworkInterface.getNetworkInterfaces())) {
             if (!ni.isUp() || ni.isLoopback()) continue;
+
             for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
                 InetAddress b = ia.getBroadcast();
                 if (b != null) return b;

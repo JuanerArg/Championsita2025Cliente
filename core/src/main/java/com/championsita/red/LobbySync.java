@@ -14,7 +14,7 @@ public interface LobbySync {
     default void aplicarSkinRival(String skin) {}
 
     // READY en selección de skin
-    default void aplicarReadyRival(boolean listo) {}
+    void aplicarReadyRival(boolean listo);
 
     // -------------------------
     // CONFIGURACIÓN DE PARTIDA

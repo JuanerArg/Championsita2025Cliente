@@ -47,7 +47,7 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
     public CargaOnlineSkin(Principal juego, HiloCliente cliente) {
         super(juego);
         this.cliente = cliente;
-        this.cliente.setPantallaActual(this);
+        this.cliente.setLobbyPantalla(this);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
 
         String nombre = skinsLocales[idxSkinLocal].getNombre();
         spriteLocal.setTexture(Assets.tex("jugador/" + nombre.toLowerCase() + "/Jugador.png"));
-        if(cliente != null) cliente.enviar("SKIN_RIVAL=jugador/" + nombre.toLowerCase() + "/Jugador.png");
+        if (cliente != null) cliente.enviar("SKIN_RIVAL=jugador/" + nombre.toLowerCase() + "/Jugador.png");
     }
 
     @Override
@@ -173,6 +173,8 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
             cliente.enviar("READY_SKIN=" + (v ? "1" : "0"));
     }
 
+
+    @Override
     public void aplicarReadyRival(boolean listo) {
         this.rivalListo = listo;
         if (estoyListo && rivalListo) avanzar();

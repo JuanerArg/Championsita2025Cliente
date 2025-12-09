@@ -70,7 +70,7 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
     public CargaOnlineCampo(Principal juego, HiloCliente cliente, String skinLocal) {
         super(juego);
         this.cliente = cliente;
-        this.cliente.setPantallaActual(this);// ← ESTA LÍNEA FALTA
+        this.cliente.setLobbyPantalla(this);// ← ESTA LÍNEA FALTA
         this.skinLocal = skinLocal;
     }
 
@@ -355,5 +355,10 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         boolean d = hit(f, x, y);
         f.setTexture(d ? flechaHoverTex : flechaNormalTex);
         if (!izq) f.setRotation(180);
+    }
+
+    @Override
+    public void aplicarReadyRival(boolean listo) {
+        rivalListo = listo;
     }
 }
