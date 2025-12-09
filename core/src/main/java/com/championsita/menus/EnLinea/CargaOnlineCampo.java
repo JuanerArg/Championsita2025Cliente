@@ -287,7 +287,7 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
 
     // ====== MÉTODOS QUE EL HILOCLIENTE LLAMA AL RECIBIR MENSAJES =======
 
-    public void aplicarCampoRemoto(String nombre) {
+    public void aplicarCampoRival(String nombre) {
         for (int i = 0; i < listaCampos.length; i++) {
             if (listaCampos[i].getNombre().equals(nombre)) {
                 indiceCampo = i;
@@ -297,7 +297,7 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         }
     }
 
-    public void aplicarGolesRemoto(int g) {
+    public void aplicarGolesRival(int g) {
         for (int i = 0; i < opcionesGoles.length; i++) {
             if (opcionesGoles[i] == g) {
                 indiceGoles = i;
@@ -307,7 +307,7 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         }
     }
 
-    public void aplicarTiempoRemoto(int t) {
+    public void aplicarTiempoRival(int t) {
         for (int i = 0; i < opcionesTiempo.length; i++) {
             if (opcionesTiempo[i] == t) {
                 indiceTiempo = i;
@@ -317,7 +317,7 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         }
     }
 
-    public void aplicarReadyRemoto(boolean listo) {
+    public void aplicarReadyRival(boolean listo) {
         rivalListo = listo;
         if (estoyListo && rivalListo) avanzar();
     }
@@ -355,10 +355,5 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         boolean d = hit(f, x, y);
         f.setTexture(d ? flechaHoverTex : flechaNormalTex);
         if (!izq) f.setRotation(180);
-    }
-
-    @Override
-    public void aplicarReadyRival(boolean listo) {
-        rivalListo = listo;
     }
 }
