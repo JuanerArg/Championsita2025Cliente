@@ -5,24 +5,32 @@ import java.util.List;
 
 public class EstadoPartidaCliente {
 
-    public List<EstadoPersonaje> jugadores = new ArrayList<>();
-    public EstadoPelota pelota = new EstadoPelota();
+    public ArrayList<EstadoPersonaje> jugadores;
+    public EstadoPelota pelota;
 
-    public EstadoArco arcoIzq = new EstadoArco();
-    public EstadoArco arcoDer = new EstadoArco();
+    public EstadoArco arcoIzq;
+    public EstadoArco arcoDer;
 
     public int golesRojo;
     public int golesAzul;
 
     public float tiempo;
 
+    public EstadoPartidaCliente(ArrayList<EstadoPersonaje> jugadores, EstadoPelota pelota, EstadoArco arcoIzq, EstadoArco arcoDer, int golesAzul, int golesRojo){
+        this.jugadores = jugadores;
+        this.pelota = pelota;
+        this.arcoIzq = arcoIzq;
+        this.arcoDer = arcoDer;
+        this.golesAzul = golesAzul;
+        this.golesRojo = golesRojo;
+    }
+
     public synchronized void actualizar(
             List<EstadoPersonaje> jugadoresNuevos,
             EstadoPelota pelotaNueva,
             EstadoArco izq,
             EstadoArco der,
-            int golesR, int golesA,
-            float tiempoPartido
+            int golesR, int golesA
     ) {
         jugadores.clear();
         jugadores.addAll(jugadoresNuevos);
@@ -34,7 +42,5 @@ public class EstadoPartidaCliente {
 
         golesRojo = golesR;
         golesAzul = golesA;
-
-        tiempo = tiempoPartido;
     }
 }

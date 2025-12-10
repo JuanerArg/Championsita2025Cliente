@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.championsita.Principal;
+import com.championsita.menus.herramientas.ConfigCliente;
 import com.championsita.menus.menuprincipal.GestorInputMenu;
 import com.championsita.menus.menuprincipal.Inicial;
 import com.championsita.menus.menuprincipal.Menu;
@@ -38,6 +39,8 @@ public class MenuEnLinea extends Menu implements LobbySync {
     private final Color colorListo  = new Color(0, 1, 0, 1);
 
     private final HiloCliente cliente;
+
+    private String modoActual = "1vs1";
 
 
     // ====================================================
@@ -198,6 +201,7 @@ public class MenuEnLinea extends Menu implements LobbySync {
 
     private void actualizarSpriteModo() {
         spriteModo.setTexture(modos[indiceModo].getTextura());
+        modoActual = modos[indiceModo].getCodigo();
     }
 
 
@@ -232,6 +236,9 @@ public class MenuEnLinea extends Menu implements LobbySync {
         this.spriteModo.setTexture(modo.getTextura());
     }
 
+    @Override
+    public void actualizarIndiceSkinRival(String substring) {}
+
 
     // ====================================================
     // TRANSICIÓN A SIGUIENTE PANTALLA
@@ -242,6 +249,10 @@ public class MenuEnLinea extends Menu implements LobbySync {
         // TEMPORAL
         System.out.println("AMBOS LISTOS → CAMBIAR A CARGA ONLINE");
         enviarReady(true);
+        if(modoActual == null){
+            System.err.println("EL MODO NO ESTA");
+        }
+        cliente.config = new ConfigCliente.Builder().modo(modoActual).build();
         juego.setScreen(new CargaOnlineSkin(juego, cliente));
     }
 

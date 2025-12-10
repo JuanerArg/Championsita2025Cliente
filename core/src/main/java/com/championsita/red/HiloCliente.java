@@ -1,10 +1,15 @@
 package com.championsita.red;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.championsita.Principal;
 import com.championsita.menus.EnLinea.MenuEnLinea;
+import com.championsita.menus.herramientas.ConfigCliente;
+import com.championsita.partida.herramientas.PantallaEsperandoServidor;
+import com.championsita.partida.herramientas.PantallaPartida;
 
 import java.net.*;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class HiloCliente extends Thread {
@@ -20,10 +25,17 @@ public class HiloCliente extends Thread {
 
     public volatile EstadoCliente estado = EstadoCliente.DESCONECTADO;
     public EstadoPartidaCliente estadoActual;
+    public List<EstadoPersonaje> jugadores;
+    public EstadoPelota pelota;
+    public EstadoArco estadoArcoIzquierdo, estadoArcoDerecho;
+    public int golesAzul, golesRojo;
+
 
     private boolean fin = false;
     private Principal juego;
     private LobbySync pantallaLobby = null;
+    public ConfigCliente config = new ConfigCliente();
+
 
     private static final long TIMEOUT_MS = 3000;
 
@@ -127,7 +139,11 @@ public class HiloCliente extends Thread {
         if (pantallaLobby == null) return false;
 
         if (msg.startsWith("SKIN_RIVAL=")) {
-            actualizarUI(() -> pantallaLobby.aplicarSkinRival(msg.substring(11)));
+            if(msg.substring(11).startsWith("jugador")){
+                actualizarUI(() -> pantallaLobby.aplicarSkinRival(msg.substring(11)));
+            }else{
+                actualizarUI(() -> pantallaLobby.actualizarIndiceSkinRival(msg.substring(11)));
+            }
             return true;
         }
 
@@ -135,6 +151,11 @@ public class HiloCliente extends Thread {
             boolean ready = msg.endsWith("1");
             actualizarUI(() -> pantallaLobby.aplicarReadyRival(ready));
             return true;
+        }
+
+        if(msg.startsWith("READY_CAMPO")){
+            boolean ready = msg.endsWith("1");
+            actualizarUI(() -> pantallaLobby.aplicarReadyRival(ready));
         }
 
         if (msg.startsWith("READY_SKIN=")) {
@@ -175,19 +196,136 @@ public class HiloCliente extends Thread {
     // ------------------------------
     private boolean procesarEstadoPartida(String msg) {
 
-        if (msg.equals("PARTIDA_INICIADA")) return true;
-
-        if (msg.startsWith("STATE;")) {
-            procesarEstadoPartidaInterno(msg.substring(6));
+        if (msg.equals("PARTIDA_INICIADA")) {
+            actualizarUI(() -> juego.actualizarPantalla(new PantallaPartida(juego, this, config)));
             return true;
         }
+
+        if (msg.startsWith("STATE;")) {
+            estadoActual = procesarEstadoPartidaInterno(msg.substring(6));
+            System.out.println(msg);
+            return true;
+        }
+
+        if (msg.startsWith("")) return false;
 
         return false;
     }
 
-    private void procesarEstadoPartidaInterno(String contenido) {
-        //
+    private EstadoPartidaCliente procesarEstadoPartidaInterno(String contenido) {
+
+        ArrayList<EstadoPersonaje> jugadores = new ArrayList<>();
+        EstadoPelota pelota = new EstadoPelota();
+        EstadoArco arcoIzquierdo = new EstadoArco();
+        EstadoArco arcoDerecho = new EstadoArco();
+        String mensaje;
+
+        int golesRojo = 0, golesAzul = 0;
+
+        // Quitar "STATE;"
+        if(contenido.startsWith("STATE")){
+            mensaje = contenido.substring("STATE".length());
+        }else {
+            mensaje = contenido;
+        }
+
+        String[] partes = mensaje.split(";");
+
+        for (String p : partes) {
+
+            // 1) Divido por comas
+            String[] tokens = p.split(",");
+
+            if (tokens.length == 0) continue;
+
+            // 2) tokens[0] es J1 / J2 / PEL / ARC_I / ARC_D / HUD
+            String prefix = tokens[0];
+
+            // 3) Parsear todos los key=value a solo value
+            //    Ej: "x=100" → "100"
+            ArrayList<String> values = new ArrayList<>();
+
+            for (int i = 1; i < tokens.length; i++) {
+                String token = tokens[i];
+
+                String[] kv = token.split("="); // kv[0]=clave, kv[1]=valor
+                if (kv.length == 2) {
+                    values.add(kv[1]);
+                } else {
+                    values.add(""); // por si llegara algo raro
+                }
+            }
+
+            // 4) Ahora "values" ya tiene solo los valores puros
+            switch (prefix) {
+
+                case "J0":
+                case "J1": {
+                    EstadoPersonaje pj = new EstadoPersonaje(
+                            Float.parseFloat(values.get(0)), // x
+                            Float.parseFloat(values.get(1)), // y
+                            Float.parseFloat(values.get(2)), // w
+                            Float.parseFloat(values.get(3)), // h
+                            Boolean.parseBoolean(values.get(4)), // mov
+                            values.get(5), // direccion
+                            Float.parseFloat(values.get(6)), // tiempo anim
+                            Float.parseFloat(values.get(7)), // stamina actual
+                            Float.parseFloat(values.get(8))  // stamina max
+                    );
+                    jugadores.add(pj);
+                    break;
+                }
+
+                case "PEL": {
+                    pelota = new EstadoPelota(
+                            Float.parseFloat(values.get(0)),
+                            Float.parseFloat(values.get(1)),
+                            Float.parseFloat(values.get(2)),
+                            Float.parseFloat(values.get(3)),
+                            Float.parseFloat(values.get(4)), // stateTime
+                            Boolean.parseBoolean(values.get(5)) // animar
+                    );
+                    break;
+                }
+
+                case "ARC_I": {
+                    arcoIzquierdo = new EstadoArco(
+                            Float.parseFloat(values.get(0)),
+                            Float.parseFloat(values.get(1)),
+                            Float.parseFloat(values.get(2)),
+                            Float.parseFloat(values.get(3))
+                    );
+                    break;
+                }
+
+                case "ARC_D": {
+                    arcoDerecho = new EstadoArco(
+                            Float.parseFloat(values.get(0)),
+                            Float.parseFloat(values.get(1)),
+                            Float.parseFloat(values.get(2)),
+                            Float.parseFloat(values.get(3))
+                    );
+                    break;
+                }
+
+                case "HUD": {
+                    golesRojo = Integer.parseInt(values.get(0));
+                    golesAzul = Integer.parseInt(values.get(1));
+                    break;
+                }
+            }
+        }
+
+        return new EstadoPartidaCliente(
+                jugadores,
+                pelota,
+                arcoIzquierdo,
+                arcoDerecho,
+                golesRojo,
+                golesAzul
+        );
     }
+
 
 
     // ------------------------------
@@ -348,5 +486,19 @@ public class HiloCliente extends Thread {
             }
         }
         throw new RuntimeException("No se encontró broadcast");
+    }
+
+    public void enviarConfig(ConfigCliente config) {
+        String mensaje = new String();
+
+        mensaje += "CFG_FINAL=";
+        mensaje += "campo:" + config.campo + ";";
+        mensaje += "goles:" + config.goles + ";";
+        mensaje += "tiempo:" + config.tiempo + ";";
+        mensaje += "modo:" + config.modo + ";";
+        mensaje += "skin:" + config.skinsJugadores.get(0) + ";";
+        if(config.habilidadesEspeciales.toArray().length != 0) mensaje += "habilidad" + config.habilidadesEspeciales.get(0) + ";";
+
+        enviar(mensaje);
     }
 }

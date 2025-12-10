@@ -50,13 +50,11 @@ public class RenderizadorPartida {
         batch.begin();
 
         // Jugadores
-        if (modo.equalsIgnoreCase("practica")) {
-            for (DibujadorJugador dj : jugadores) {
-                dj.dibujarJugador(batch);
-            }
-        } else {
-            jugadores.get(0).dibujarJugador(batch);
+
+        for (DibujadorJugador dj : jugadores) {
+            dj.dibujarJugador(batch);
         }
+
 
         // Pelota
         dibPelota.dibujarPelota(batch);

@@ -26,4 +26,6 @@ public interface LobbySync {
     default void aplicarTiempoRival(int tiempo) {}
 
     default void aplicarModoRival(String modo) {}
+
+    void actualizarIndiceSkinRival(String substring);
 }

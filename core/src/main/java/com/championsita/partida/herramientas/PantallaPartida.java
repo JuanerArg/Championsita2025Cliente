@@ -45,7 +45,8 @@ public class PantallaPartida implements Screen {
         this.batch = juego.getBatch();
         this.shape = new ShapeRenderer();
 
-        this.viewportJuego = new FitViewport(1024, 768);
+        this.viewportJuego = new FitViewport(8f, 5f);
+
 
         this.modoDeJuego = config.modo;
 
@@ -97,7 +98,7 @@ public class PantallaPartida implements Screen {
     // ===========================================
     @Override
     public void render(float delta) {
-
+        if (batch.isDrawing()) System.out.println("ERROR: batch quedó abierto");
         EstadoPartidaCliente estado = cliente.estadoActual;
 
         if (estado != null) {
@@ -146,7 +147,11 @@ public class PantallaPartida implements Screen {
         // ---------------------
         // DIBUJAR ARCOS
         //----------------------
-        renderizador.renderArcos(shape, viewportJuego, dibCancha);
+        try {
+            renderizador.renderArcos(shape, viewportJuego, dibCancha);
+        } catch (Exception e) {
+            System.out.println("EXCEPCIÓN OCULTA EN ARCOS: " + e.getMessage());
+        }
 
         // ---------------------
         // HUD
@@ -154,7 +159,9 @@ public class PantallaPartida implements Screen {
         renderizador.renderHudPartido(batch, hud, 1280, 720);
     }
 
-    @Override public void resize(int w, int h) {}
+    @Override public void resize(int w, int h) {
+        viewportJuego.update(w, h, true);
+    }
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}

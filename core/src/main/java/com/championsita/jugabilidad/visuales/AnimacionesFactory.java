@@ -42,25 +42,25 @@ public class AnimacionesFactory {
 
         EnumMap<Direccion, Animation<TextureRegion>> mapa = new EnumMap<>(Direccion.class);
 
-        mapa.put(Direccion.DERECHA,          cargar(sheet(skin, "derecha.png"), 7, 1));
-        mapa.put(Direccion.IZQUIERDA,        cargar(sheet(skin, "izquierda.png"), 7, 1));
-        mapa.put(Direccion.ARRIBA,           cargar(sheet(skin, "arriba.png"), 6, 1));
-        mapa.put(Direccion.ABAJO,            cargar(sheet(skin, "abajo.png"), 6, 1));
-        mapa.put(Direccion.ARRIBA_DERECHA,   cargar(sheet(skin, "arribaDerecha.png"), 6, 1));
-        mapa.put(Direccion.ARRIBA_IZQUIERDA, cargar(sheet(skin, "arribaIzquierda.png"), 6, 1));
-        mapa.put(Direccion.ABAJO_DERECHA,    cargar(sheet(skin, "abajoDerecha.png"), 6, 1));
-        mapa.put(Direccion.ABAJO_IZQUIERDA,  cargar(sheet(skin, "abajoIzquierda.png"), 6, 1));
+        mapa.put(Direccion.DERECHA,          cargar(sheet(skin, "jugadorCorriendoDerecha.png"), 7, 1));
+        mapa.put(Direccion.IZQUIERDA,        cargar(sheet(skin, "jugadorCorriendoIzquierda.png"), 7, 1));
+        mapa.put(Direccion.ARRIBA,           cargar(sheet(skin, "jugadorCorriendoArriba.png"), 6, 1));
+        mapa.put(Direccion.ABAJO,            cargar(sheet(skin, "jugadorCorriendoAbajo.png"), 6, 1));
+        mapa.put(Direccion.ARRIBA_DERECHA,   cargar(sheet(skin, "jugadorCorriendoArribaDerecha.png"), 6, 1));
+        mapa.put(Direccion.ARRIBA_IZQUIERDA, cargar(sheet(skin, "jugadorCorriendoArribaIzquierda.png"), 6, 1));
+        mapa.put(Direccion.ABAJO_DERECHA,    cargar(sheet(skin, "jugadorCorriendoAbajoDerecha.png"), 6, 1));
+        mapa.put(Direccion.ABAJO_IZQUIERDA,  cargar(sheet(skin, "jugadorCorriendoAbajoIzquierda.png"), 6, 1));
 
         return mapa;
     }
 
     public static TextureRegion cargarFrameQuieto(String skin) {
-        Texture quieto = new Texture("skins/" + skin + "/quieto.png");
+        Texture quieto = new Texture("jugador/" + skin + "/Jugador.png");
         return new TextureRegion(quieto);
     }
 
     private static Texture sheet(String skin, String archivo) {
-        return new Texture("skins/" + skin + "/" + archivo);
+        return new Texture("jugador/" + skin + "/" + archivo);
     }
 
     private static Animation<TextureRegion> cargar(Texture sheet, int columnas, int filas) {

@@ -43,7 +43,7 @@ public class DibujadorJugador {
         this.ancho = estadoPersonaje.ancho;
         this.alto = estadoPersonaje.alto;
 
-        this.direccionActual = Direccion.valueOf(estadoPersonaje.direccion);
+        this.direccionActual = Direccion.fromString(estadoPersonaje.direccion);
         this.estaMoviendo = estadoPersonaje.estaMoviendo;
         this.tiempoAnimacion = estadoPersonaje.tiempoAnimacion;
 

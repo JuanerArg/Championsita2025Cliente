@@ -18,6 +18,7 @@ public class Inicial extends Menu {
     private GestorInputMenu gestorMenu;
     private RenderizadorDeMenu renderizador;
 
+
     public Inicial(Principal juego) {
         super(juego);
     }

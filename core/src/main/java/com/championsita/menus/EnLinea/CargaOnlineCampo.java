@@ -65,13 +65,11 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
     private GestorInputMenu gestor;
     private RenderizadorDeMenu renderizador;
 
-    private final String skinLocal;
 
-    public CargaOnlineCampo(Principal juego, HiloCliente cliente, String skinLocal) {
+    public CargaOnlineCampo(Principal juego, HiloCliente cliente) {
         super(juego);
         this.cliente = cliente;
         this.cliente.setLobbyPantalla(this);// ← ESTA LÍNEA FALTA
-        this.skinLocal = skinLocal;
     }
 
     @Override
@@ -317,6 +315,10 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
         }
     }
 
+    @Override
+    public void actualizarIndiceSkinRival(String substring) {
+    }
+
     public void aplicarReadyRival(boolean listo) {
         rivalListo = listo;
         if (estoyListo && rivalListo) avanzar();
@@ -328,17 +330,12 @@ public class CargaOnlineCampo extends Menu implements LobbySync {
     // ======================
     private void avanzar() {
 
-        ConfigCliente config = new ConfigCliente.Builder()
-                .agregarSkin(skinLocal)           // skin local
-                .campo(listaCampos[indiceCampo].getNombre())
-                .goles(opcionesGoles[indiceGoles])
-                .tiempo(opcionesTiempo[indiceTiempo])
-                .modo("1v1")
-                .build();
+        cliente.config.campo = listaCampos[indiceCampo].getNombre();
+        System.out.println(listaCampos[indiceCampo].getNombre());
+        cliente.config.goles = opcionesGoles[indiceGoles];
+        cliente.config.tiempo = opcionesTiempo[indiceTiempo];
 
-        //cliente.enviarConfig(config);
-
-        juego.actualizarPantalla(new PantallaEsperandoServidor(juego));
+        cliente.enviarConfig(cliente.config);
     }
 
 

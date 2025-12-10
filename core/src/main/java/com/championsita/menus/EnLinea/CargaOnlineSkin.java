@@ -29,7 +29,10 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
     private JugadorDos[] skinsJugador2;
     private Jugador[] skinsLocales;
     private int idxSkinLocal;
+    private int idxSkinRival;
     private Sprite spriteLocal;
+    private String nombreSkinElegida;
+    private String nombreSkinRival;
 
     private Sprite spriteRival; // Se actualiza desde red
 
@@ -89,9 +92,12 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
     private void cambiarSkin(boolean derecha) {
         idxSkinLocal = (idxSkinLocal + (derecha ? 1 : -1) + skinsLocales.length) % skinsLocales.length;
 
-        String nombre = skinsLocales[idxSkinLocal].getNombre();
-        spriteLocal.setTexture(Assets.tex("jugador/" + nombre.toLowerCase() + "/Jugador.png"));
-        if (cliente != null) cliente.enviar("SKIN_RIVAL=jugador/" + nombre.toLowerCase() + "/Jugador.png");
+        nombreSkinElegida = skinsLocales[idxSkinLocal].getNombre();
+        spriteLocal.setTexture(Assets.tex("jugador/" + nombreSkinElegida.toLowerCase() + "/Jugador.png"));
+        if (cliente != null) {
+            cliente.enviar("SKIN_RIVAL=jugador/" + nombreSkinElegida.toLowerCase() + "/Jugador.png");
+            cliente.enviar("SKIN_RIVAL=" + idxSkinLocal);
+        }
     }
 
     @Override
@@ -184,10 +190,17 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
         spriteRival.setTexture(Assets.tex(skin.toLowerCase()));
     }
 
+    @Override
+    public void actualizarIndiceSkinRival(String indiceRival){
+        this.idxSkinRival = Integer.parseInt(String.valueOf(indiceRival));
+    }
+
     private void avanzar() {
-        juego.actualizarPantalla(new CargaOnlineCampo(juego, cliente,
-                skinsLocales[idxSkinLocal].getNombre()
-        ));
+        nombreSkinElegida = skinsLocales[idxSkinLocal].getNombre();
+        nombreSkinRival = skinsLocales[idxSkinRival].getNombre();
+        cliente.config.skinsJugadores.add(nombreSkinElegida.toLowerCase());
+        cliente.config.skinsJugadores.add(nombreSkinRival.toLowerCase());
+        juego.actualizarPantalla(new CargaOnlineCampo(juego, cliente));
     }
 
     @Override
