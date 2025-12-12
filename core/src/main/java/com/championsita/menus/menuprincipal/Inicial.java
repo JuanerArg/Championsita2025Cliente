@@ -29,7 +29,7 @@ public class Inicial extends Menu {
 
         this.botones = new Sprite[] {
                 new Sprite(new Texture("menuInicial/onlineBoton.png")),
-                new Sprite(new Texture("menuInicial/localBoton.png")),
+                // Sprite(new Texture("menuInicial/localBoton.png")),
                 new Sprite(new Texture("menuInicial/opcionesBoton.png")),
                 new Sprite(new Texture("menuInicial/salirBoton.png"))
         };

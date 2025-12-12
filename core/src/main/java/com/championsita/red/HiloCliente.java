@@ -25,10 +25,6 @@ public class HiloCliente extends Thread {
 
     public volatile EstadoCliente estado = EstadoCliente.DESCONECTADO;
     public EstadoPartidaCliente estadoActual;
-    public List<EstadoPersonaje> jugadores;
-    public EstadoPelota pelota;
-    public EstadoArco estadoArcoIzquierdo, estadoArcoDerecho;
-    public int golesAzul, golesRojo;
 
 
     private boolean fin = false;
@@ -138,6 +134,10 @@ public class HiloCliente extends Thread {
     private boolean procesarLobbySync(String msg) {
         if (pantallaLobby == null) return false;
 
+        if(msg.startsWith("HAB_ESP")){
+            //
+        }
+
         if (msg.startsWith("SKIN_RIVAL=")) {
             if(msg.substring(11).startsWith("jugador")){
                 actualizarUI(() -> pantallaLobby.aplicarSkinRival(msg.substring(11)));
@@ -203,7 +203,7 @@ public class HiloCliente extends Thread {
 
         if (msg.startsWith("STATE;")) {
             estadoActual = procesarEstadoPartidaInterno(msg.substring(6));
-            System.out.println(msg);
+            System.out.println("Estado actual: " + estadoActual.jugadores.get(0).estaMoviendo);
             return true;
         }
 
@@ -266,12 +266,13 @@ public class HiloCliente extends Thread {
                             Float.parseFloat(values.get(1)), // y
                             Float.parseFloat(values.get(2)), // w
                             Float.parseFloat(values.get(3)), // h
-                            Boolean.parseBoolean(values.get(4)), // mov
+                            values.get(4).equals("1"), // mov
                             values.get(5), // direccion
                             Float.parseFloat(values.get(6)), // tiempo anim
                             Float.parseFloat(values.get(7)), // stamina actual
                             Float.parseFloat(values.get(8))  // stamina max
                     );
+                    //System.out.println("Creando estado: " + values.get(4));
                     jugadores.add(pj);
                     break;
                 }

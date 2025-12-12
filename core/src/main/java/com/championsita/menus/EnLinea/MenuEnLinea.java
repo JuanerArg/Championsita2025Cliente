@@ -233,6 +233,7 @@ public class MenuEnLinea extends Menu implements LobbySync {
         if (modo == null) return;
 
         this.indiceModo = modo.ordinal();
+        modoActual = codigoModo;
         this.spriteModo.setTexture(modo.getTextura());
     }
 

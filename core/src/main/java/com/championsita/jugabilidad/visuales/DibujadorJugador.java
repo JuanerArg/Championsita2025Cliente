@@ -53,7 +53,7 @@ public class DibujadorJugador {
 
     public void dibujarJugador(SpriteBatch batch) {
         TextureRegion frame;
-
+        //System.out.println(estaMoviendo);
         if (estaMoviendo) {
             Animation<TextureRegion> anim = animaciones.get(direccionActual);
             frame = anim.getKeyFrame(tiempoAnimacion, true);

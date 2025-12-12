@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.championsita.Principal;
 import com.championsita.menus.menucarga.Carga;
 import com.championsita.menus.menueleccion.Doble;
+import com.championsita.red.HiloCliente;
 
 public class EntradaJugador implements InputProcessor {
 
@@ -12,13 +13,15 @@ public class EntradaJugador implements InputProcessor {
 
     private boolean arriba, abajo, izquierda, derecha, espacioPresionado, sprintPresionado;
 
-    public EntradaJugador(int arriba, int abajo, int izquierda, int derecha, int accion, int sprint) {
+    HiloCliente cliente;
+    public EntradaJugador(int arriba, int abajo, int izquierda, int derecha, int accion, int sprint, HiloCliente cliente) {
         this.keyArriba = arriba;
         this.keyAbajo = abajo;
         this.keyIzquierda = izquierda;
         this.keyDerecha = derecha;
         this.keyAccion = accion;
         this.keySprint = sprint;
+        this.cliente = cliente;
     }
 
     @Override
@@ -30,6 +33,7 @@ public class EntradaJugador implements InputProcessor {
         if (keycode == keyDerecha)   { derecha = true; handled = true; }
         if (keycode == keyAccion)    { espacioPresionado = true; handled = true; }
         if (keycode == keySprint)    { sprintPresionado = true; handled = true; }
+        enviarInput(this.cliente);
         return handled; // <-- SOLO true si esta instancia efectivamente manejó la tecla
     }
 
@@ -42,11 +46,21 @@ public class EntradaJugador implements InputProcessor {
         if (keycode == keyDerecha)   { derecha = false; handled = true; }
         if (keycode == keyAccion)    { espacioPresionado = false; handled = true; }
         if (keycode == keySprint)    { sprintPresionado = false; handled = true; }
+        enviarInput(this.cliente);
         return handled; // <-- idem
     }
 
-    public void actualizar(float delta) {
+    public void enviarInput(HiloCliente cliente) {
+        String msg = "INPUT:";
+        msg += "u=" + (arriba               ? "1" : "0") + ",";
+        msg += "d=" + (abajo                ? "1" : "0") + ",";
+        msg += "l=" + (izquierda            ? "1" : "0") + ",";
+        msg += "r=" + (derecha              ? "1" : "0") + ",";
+        msg += "a=" + (espacioPresionado    ? "1" : "0") + ",";
+        msg += "s=" + (sprintPresionado     ? "1" : "0");
 
+        cliente.enviar(msg);
+        System.out.println(msg);
     }
 
     // Métodos no usados

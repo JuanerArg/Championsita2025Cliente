@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.championsita.Principal;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -18,6 +20,8 @@ public class Menu extends InputAdapter implements Screen {
     protected int altoPantalla;
     protected int anchoPantalla;
     protected SpriteBatch batch;
+    public Viewport viewportJuego;
+    public Viewport viewportMenus;
 
     private Texture fondo;
     protected Sprite fondoSprite;
@@ -39,6 +43,8 @@ public class Menu extends InputAdapter implements Screen {
 
     public Menu(Principal juego) {
         this.juego = juego;
+        this.viewportJuego = new FitViewport(8f, 5f);
+        this.viewportMenus = new FitViewport(1024, 768);
     }
 
     @Override
@@ -47,6 +53,7 @@ public class Menu extends InputAdapter implements Screen {
 
         this.anchoPantalla = 1024;
         this.altoPantalla = 768;
+        resize(anchoPantalla, altoPantalla);
 
         // Assets compartidos
         this.atras = Assets.tex("atrasBoton.png");
@@ -97,7 +104,7 @@ public class Menu extends InputAdapter implements Screen {
 
     @Override
     public void render(float delta) {}
-    @Override public void resize(int width, int height) {}
+    @Override public void resize(int width, int height) {viewportMenus.update(width, height, true);}
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}

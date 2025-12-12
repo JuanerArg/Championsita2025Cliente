@@ -1,6 +1,7 @@
 package com.championsita.partida.herramientas;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import com.championsita.Principal;
+import com.championsita.jugabilidad.entrada.EntradaJugador;
 import com.championsita.red.HiloCliente;
 import com.championsita.red.EstadoPartidaCliente;
 import com.championsita.menus.herramientas.ConfigCliente;
@@ -33,6 +35,7 @@ public class PantallaPartida implements Screen {
     private DibujadorCancha dibCancha;
     private DibujadorPelota dibPelota;
     private ArrayList<DibujadorJugador> dibJugadores = new ArrayList<>();
+    private EntradaJugador inputJugador;
     private HudPartido hud;
 
     private String modoDeJuego;
@@ -46,10 +49,17 @@ public class PantallaPartida implements Screen {
         this.shape = new ShapeRenderer();
 
         this.viewportJuego = new FitViewport(8f, 5f);
-
-
+        resize(8,5);
         this.modoDeJuego = config.modo;
 
+        inputJugador = new EntradaJugador(Input.Keys.W,
+                Input.Keys.S,
+                Input.Keys.A,
+                Input.Keys.D,
+                Input.Keys.SPACE,
+                Input.Keys.SHIFT_LEFT,
+                this.cliente);
+        Gdx.input.setInputProcessor(inputJugador);
         inicializarDibujadores();
     }
 
@@ -101,11 +111,15 @@ public class PantallaPartida implements Screen {
         if (batch.isDrawing()) System.out.println("ERROR: batch quedó abierto");
         EstadoPartidaCliente estado = cliente.estadoActual;
 
+        //inputJugador.enviarInput(cliente);
+
         if (estado != null) {
 
             // Jugadores
             for (int i = 0; i < dibJugadores.size(); i++) {
                 dibJugadores.get(i).actualizar(estado.jugadores.get(i));
+                System.out.println("Actualizando estado: " + estado.jugadores.get(i).estaMoviendo);
+                System.out.println("Actualizando estado: " + estado.jugadores.get(i).direccion);
             }
 
             // Pelota
