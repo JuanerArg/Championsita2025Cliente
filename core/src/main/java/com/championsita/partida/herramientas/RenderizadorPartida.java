@@ -75,6 +75,8 @@ public class RenderizadorPartida {
 
         batch.begin();
         if (estadoPartida != null)
+            System.out.println(estadoPartida.golesAzul);
+            System.out.println(estadoPartida.golesRojo);
             hud.dibujarHud(batch, estadoPartida);
         batch.end();
     }

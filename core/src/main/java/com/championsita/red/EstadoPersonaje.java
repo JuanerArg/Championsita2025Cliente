@@ -2,6 +2,8 @@ package com.championsita.red;
 
 public class    EstadoPersonaje {
 
+    public int id;
+
     public float x, y;
     public float ancho, alto;
 

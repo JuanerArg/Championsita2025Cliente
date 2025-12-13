@@ -9,7 +9,6 @@ import java.util.List;
  * Solo datos elegidos por los menús.
  */
 public class ConfigCliente {
-
     // Skins seleccionadas (orden: J1, J2)
     public List<String> skinsJugadores = new ArrayList<>();
 

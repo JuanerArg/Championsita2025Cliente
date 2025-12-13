@@ -5,8 +5,10 @@ import com.championsita.menus.compartido.Assets;
 
 public enum ModosEnLinea {
 
-    UNO_VS_UNO("1v1", "menuInicial/2jugadoresBoton.png"),
-    ESPECIAL("especial", "Especial.png");
+    FUTBOL("1v1", "menuInicial/2jugadoresBoton.png"),
+    ESPECIAL("especial", "Especial.png"),
+    FUTSAL("futsal", "menuInicial/futsal.png");
+
 
     private final String codigo;
     private final String textura;

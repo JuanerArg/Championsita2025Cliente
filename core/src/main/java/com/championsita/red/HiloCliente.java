@@ -34,6 +34,7 @@ public class HiloCliente extends Thread {
 
 
     private static final long TIMEOUT_MS = 3000;
+    private int idCliente;
 
 
     // ====================================================
@@ -106,6 +107,11 @@ public class HiloCliente extends Thread {
     // HANDSHAKE
     // ------------------------------
     private boolean procesarHandshake(String msg) {
+
+        if(msg.startsWith("Registrado")){
+            String[] partes = msg.split(" "); // ["Registrado", "con", "ID", "213"]
+            idCliente = Integer.parseInt(partes[3]); // partes[3] = "213"
+        }
 
         switch (msg) {
             case "Conectado":
@@ -493,6 +499,7 @@ public class HiloCliente extends Thread {
         String mensaje = new String();
 
         mensaje += "CFG_FINAL=";
+        mensaje += "id" + this.idCliente + ";";
         mensaje += "campo:" + config.campo + ";";
         mensaje += "goles:" + config.goles + ";";
         mensaje += "tiempo:" + config.tiempo + ";";
@@ -502,4 +509,16 @@ public class HiloCliente extends Thread {
 
         enviar(mensaje);
     }
+
+    public int getIdJugador() {
+        return idCliente;
+    }
+
+    public void detener() {
+        fin = true;
+        if (socket != null && !socket.isClosed()) {
+            socket.close();
+        }
+    }
+
 }

@@ -252,10 +252,18 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
     }
 
     private void avanzar() {
-        nombreSkinElegida = skinsLocales[idxSkinLocal].getNombre();
-        nombreSkinRival = skinsLocales[idxSkinRival].getNombre();
-        cliente.config.skinsJugadores.add(nombreSkinElegida.toLowerCase());
-        cliente.config.skinsJugadores.add(nombreSkinRival.toLowerCase());
+        String miSkin = skinsLocales[idxSkinLocal].getNombre().toLowerCase();
+        String rivalSkin = skinsLocales[idxSkinRival].getNombre().toLowerCase();
+
+        if (cliente.getIdJugador() == 1) {
+            // Soy jugador ROJO → mi skin va primero
+            cliente.config.skinsJugadores.add(miSkin);
+            cliente.config.skinsJugadores.add(rivalSkin);
+        } else {
+            // Soy jugador AZUL → mi skin va segundo
+            cliente.config.skinsJugadores.add(rivalSkin);
+            cliente.config.skinsJugadores.add(miSkin);
+        }
         if(esEspecial){
             cliente.config.habilidadesEspeciales.add(String.valueOf(habilidadesLocales[idxHabLocal]));
         }

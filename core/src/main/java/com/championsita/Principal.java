@@ -2,6 +2,7 @@ package com.championsita;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.LifecycleListener;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -26,6 +27,22 @@ public class Principal extends Game {
         this.accionColor = new Color(0, 1, 0, 1);
         this.menu = new Inicial(this);
         this.actualizarPantalla(this.menu);
+        Gdx.app.addLifecycleListener(new LifecycleListener() {
+            @Override
+            public void pause() {}
+
+            @Override
+            public void resume() {}
+
+            @Override
+            public void dispose() {
+                if (cliente != null) {
+                    cliente.enviar("DISCONNECT");
+                    cliente.detener();
+                }
+            }
+        });
+
     }
 
     public SpriteBatch getBatch() {
@@ -50,8 +67,14 @@ public class Principal extends Game {
 
     @Override
     public void dispose() {
+        if (cliente != null) {
+            cliente.enviar("DISCONNECT");
+            cliente.detener();
+        }
         this.batch.dispose();
+        super.dispose();
     }
+
 
     public void setVolumenMusica(float volumenMusica) {
         this.volumenMusica = volumenMusica;

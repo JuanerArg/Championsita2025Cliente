@@ -103,16 +103,16 @@ public class Inicial extends Menu {
                 super.juego.actualizarPantalla(new PantallaEsperandoServidor(super.juego));
                 break;
             }
-            case 1: {
+//            case 1: {
                 // LOCAL => submenú propio con 2 Jugadores y Práctica
-                super.juego.actualizarPantalla(new Local(super.juego));
-                break;
-            }
-            case 2: {
+//                super.juego.actualizarPantalla(new Local(super.juego));
+//                break;
+//            }
+            case 1: {
                 super.juego.actualizarPantalla(new Opcion(super.juego));
                 break;
             }
-            case 3: {
+            case 2: {
                 // SALIR
                 Gdx.app.exit();
                 break;
