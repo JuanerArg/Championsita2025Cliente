@@ -183,7 +183,8 @@ public class PantallaPartida extends InputAdapter implements Screen {
         // ---------------------
         // HUD
         // ---------------------
-        renderizador.renderHudPartido(batch, hud, 1280, 720);
+
+        renderizador.renderHudPartido(batch, hud, 1280, 720, this.config);
         this.pausa.renderizar(batch);
     }
 

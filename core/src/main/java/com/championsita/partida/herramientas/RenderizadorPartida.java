@@ -8,6 +8,7 @@ import com.championsita.jugabilidad.visuales.DibujadorCancha;
 import com.championsita.jugabilidad.visuales.DibujadorJugador;
 import com.championsita.jugabilidad.visuales.DibujadorPelota;
 import com.championsita.jugabilidad.visuales.HudPartido;
+import com.championsita.menus.herramientas.ConfigCliente;
 import com.championsita.red.EstadoPartidaCliente;
 
 import java.util.ArrayList;
@@ -68,16 +69,16 @@ public class RenderizadorPartida {
     public void renderHudPartido(SpriteBatch batch,
                                  HudPartido hud,
                                  int ancho,
-                                 int alto) {
+                                 int alto,
+                                 ConfigCliente config
+                                ) {
 
         // HUD en coordenadas de pantalla
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0, 0, ancho, alto));
 
         batch.begin();
         if (estadoPartida != null)
-            //System.out.println(estadoPartida.golesAzul);
-            //System.out.println(estadoPartida.golesRojo);
-            hud.dibujarHud(batch, estadoPartida);
+            hud.dibujarHud(batch, estadoPartida, config);
         batch.end();
     }
 

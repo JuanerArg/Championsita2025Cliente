@@ -11,6 +11,7 @@ import com.championsita.partida.herramientas.PantallaPartida;
 
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class HiloCliente extends Thread {
@@ -235,7 +236,11 @@ public class HiloCliente extends Thread {
         EstadoPelota pelota = new EstadoPelota();
         EstadoArco arcoIzquierdo = new EstadoArco();
         EstadoArco arcoDerecho = new EstadoArco();
+        String ganador = "";
+        int tiempo = 80085;
         String mensaje;
+
+        System.out.println(contenido);
 
         int golesRojo = 0, golesAzul = 0;
 
@@ -330,6 +335,10 @@ public class HiloCliente extends Thread {
                 case "HUD": {
                     golesRojo = Integer.parseInt(values.get(0));
                     golesAzul = Integer.parseInt(values.get(1));
+                    tiempo = Integer.parseInt(values.get(2));
+                    if(values.size() == 4){
+                        ganador = values.get(3);
+                    }
                     break;
                 }
             }
@@ -341,7 +350,9 @@ public class HiloCliente extends Thread {
                 arcoIzquierdo,
                 arcoDerecho,
                 golesRojo,
-                golesAzul
+                golesAzul,
+                tiempo,
+                ganador
         );
     }
 
@@ -502,7 +513,7 @@ public class HiloCliente extends Thread {
     }
 
     private InetAddress obtenerBroadcast() throws SocketException {
-        for (NetworkInterface ni : java.util.Collections.list(NetworkInterface.getNetworkInterfaces())) {
+        for (NetworkInterface ni : Collections.list(NetworkInterface.getNetworkInterfaces())) {
             if (!ni.isUp() || ni.isLoopback()) continue;
 
             for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
@@ -523,10 +534,10 @@ public class HiloCliente extends Thread {
         mensaje += "tiempo:" + config.tiempo + ";";
         mensaje += "modo:" + config.modo + ";";
         mensaje += "skin:" + config.skinsJugadores.get(0) + ";";
-        if(config.habilidadesEspeciales.toArray().length != 0)
+        if(config.habilidadesEspeciales.toArray().length != 0) {
             System.out.println(config.habilidadesEspeciales.get(0));
             mensaje += "habilidad:" + config.habilidadesEspeciales.get(0) + ";";
-
+        }
         enviar(mensaje);
     }
 
