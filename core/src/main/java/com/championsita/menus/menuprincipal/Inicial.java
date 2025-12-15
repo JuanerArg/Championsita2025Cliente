@@ -1,8 +1,11 @@
 package com.championsita.menus.menuprincipal;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
 import com.championsita.Principal;
 import com.championsita.menus.EnLinea.MenuEnLinea;
 import com.championsita.menus.local.Local;
@@ -49,8 +52,8 @@ public class Inicial extends Menu {
 
         int cantBotones = 6;
         super.inicializarSonido(cantBotones);
-
         Gdx.input.setInputProcessor(this);
+
 
         //Inicializar Gestores-Herramientas
         gestorMenu = new GestorInputMenu(this);
@@ -59,48 +62,66 @@ public class Inicial extends Menu {
 
     @Override
     public void render(float delta) {
-        super.batch.begin();
-        renderizador.renderFondo(delta); // dibuja el fondo
-        for (Sprite b : this.botones) b.draw(super.batch);
-        super.batch.end();
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        viewportMenus.apply();
+        batch.setProjectionMatrix(viewportMenus.getCamera().combined);
+
+        batch.begin();
+        renderizador.renderFondo(delta);
+        for (Sprite b : botones) b.draw(batch);
+        batch.end();
     }
+
+
 
     @Override
     public boolean touchUp(int x, int y, int pointer, int button) {
-        y = Gdx.graphics.getHeight() - y;
-
+        viewportMenus.apply();
+        Vector2 coords = viewportMenus.unproject(new Vector2(x, y));
+        Gdx.app.log("TOUCH", "Coords desproyectadas: " + coords);
         for (int i = 0; i < botones.length; i++) {
             Sprite boton = botones[i];
-
             float bx = boton.getX();
             float by = boton.getY();
-            if (x >= bx && x <= bx + anchoBotones && y >= by && y <= by + altoBotones) {
+            Gdx.app.log("BOTON", "Boton " + i + ": (" + bx + "," + by + ") → (" + (bx + anchoBotones) + "," + (by + altoBotones) + ")");
+
+            if (coords.x >= bx && coords.x <= bx + anchoBotones &&
+                    coords.y >= by && coords.y <= by + altoBotones) {
+                Gdx.app.log("HIT", "Click sobre botón " + i);
                 cambiarMenu(i);
                 return true;
             }
         }
+
         return false;
     }
 
+
+
     @Override
     public boolean mouseMoved(int x, int y) {
-        y = Gdx.graphics.getHeight() - y;
+        viewportMenus.apply();
+        Vector2 coords = viewportMenus.unproject(new Vector2(x, y));
         boolean hitAlgo = false;
 
         for (int i = 0; i < botones.length; i++) {
             Sprite boton = botones[i];
-            boolean dentro = gestorMenu.condicionDentro(x, y, boton);
+            boolean dentro = gestorMenu.condicionDentro((int) coords.x, (int) coords.y, boton);
             gestorMenu.condicionColor(dentro, boton);
             super.reproducirSonido(i, dentro);
             hitAlgo |= dentro;
         }
+
         return hitAlgo;
     }
+
 
     private void cambiarMenu(int i) {
         switch (i) {
             case 0: {
-                super.juego.actualizarPantalla(new PantallaEsperandoServidor(super.juego));
+                super.juego.setScreen(new PantallaEsperandoServidor(super.juego));
                 break;
             }
 //            case 1: {
@@ -109,7 +130,7 @@ public class Inicial extends Menu {
 //                break;
 //            }
             case 1: {
-                super.juego.actualizarPantalla(new Opcion(super.juego));
+                super.juego.setScreen(new Opcion(super.juego));
                 break;
             }
             case 2: {

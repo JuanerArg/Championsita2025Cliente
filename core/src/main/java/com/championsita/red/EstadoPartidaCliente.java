@@ -25,22 +25,17 @@ public class EstadoPartidaCliente {
         this.golesRojo = golesRojo;
     }
 
-    public synchronized void actualizar(
-            List<EstadoPersonaje> jugadoresNuevos,
-            EstadoPelota pelotaNueva,
-            EstadoArco izq,
-            EstadoArco der,
-            int golesR, int golesA
+    public synchronized void actualizar(EstadoPartidaCliente estadoPartidaActualizado
     ) {
         jugadores.clear();
-        jugadores.addAll(jugadoresNuevos);
+        jugadores.addAll(estadoPartidaActualizado.jugadores);
 
-        pelota = pelotaNueva;
+        pelota = estadoPartidaActualizado.pelota;
 
-        arcoIzq = izq;
-        arcoDer = der;
+        arcoIzq = estadoPartidaActualizado.arcoIzq;
+        arcoDer = estadoPartidaActualizado.arcoDer;
 
-        golesRojo = golesR;
-        golesAzul = golesA;
+        golesRojo = estadoPartidaActualizado.golesRojo;
+        golesAzul = estadoPartidaActualizado.golesAzul;
     }
 }

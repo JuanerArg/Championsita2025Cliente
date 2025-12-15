@@ -183,7 +183,7 @@ public class MenuEnLinea extends Menu implements LobbySync {
     private boolean manejarClickEnAtras(int x, int y) {
         if (!gestorInput.condicionDentro(x, y, super.atrasSprite)) return false;
 
-        super.juego.actualizarPantalla(new Inicial(super.juego));
+        super.juego.setScreen(new Inicial(super.juego));
         return true;
     }
 
@@ -235,6 +235,7 @@ public class MenuEnLinea extends Menu implements LobbySync {
         this.indiceModo = modo.ordinal();
         modoActual = codigoModo;
         this.spriteModo.setTexture(modo.getTextura());
+        cliente.enviar("Modo recibido");
     }
 
     @Override

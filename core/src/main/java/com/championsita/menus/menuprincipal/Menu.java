@@ -108,19 +108,21 @@ public class Menu extends InputAdapter implements Screen {
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-    @Override public void dispose() {
+    @Override public void dispose(
+
+    ) {
         // Nada que disposear acá: lo maneja Assets.
         // Si en algún momento querés liberar todo (salida del juego), llamar a Assets.disposeAll() desde Principal.
     }
 
-    protected void cambiarMenu(boolean dentro, Menu nuevaPantalla) {
+    public void cambiarMenu(boolean dentro, Menu nuevaPantalla) {
         if (!dentro) return;
 
         if (this.musica != null && this.musica.isPlaying()) {
             this.musica.stop();
         }
 
-        this.juego.actualizarPantalla(nuevaPantalla);
+        this.juego.setScreen(nuevaPantalla);
     }
 
     public void demostracionTemporalMusica(float volumen) {

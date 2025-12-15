@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.championsita.Principal;
 import com.championsita.menus.EnLinea.MenuEnLinea;
 import com.championsita.menus.herramientas.ConfigCliente;
+import com.championsita.menus.menuprincipal.Inicial;
 import com.championsita.partida.herramientas.PantallaEsperandoServidor;
 import com.championsita.partida.herramientas.PantallaPartida;
 
@@ -80,11 +81,14 @@ public class HiloCliente extends Thread {
     public void enviar(String msg) {
         try {
             byte[] data = msg.getBytes();
-            DatagramPacket p = new DatagramPacket(
-                    data, data.length,
-                    servidor.getAddress(),
-                    servidor.getPort()
-            );
+            DatagramPacket p = null;
+            if (servidor != null) {
+                p = new DatagramPacket(
+                        data, data.length,
+                        servidor.getAddress(),
+                        servidor.getPort()
+                );
+            }
             socket.send(p);
         } catch (Exception e) { e.printStackTrace(); }
     }
@@ -129,7 +133,7 @@ public class HiloCliente extends Thread {
     private void abrirLobby() {
         Gdx.app.postRunnable(() -> {
             MenuEnLinea lobby = new MenuEnLinea(juego, this);
-            juego.actualizarPantalla(lobby);
+            juego.setScreen(lobby);
             setLobbyPantalla(lobby);
         });
     }
@@ -190,6 +194,7 @@ public class HiloCliente extends Thread {
 
         if (msg.startsWith("CFG_MODO=")) {
             actualizarUI(() -> pantallaLobby.aplicarModoRival(msg.substring(9)));
+            System.out.println("Llego el modo");
             return true;
         }
 
@@ -203,13 +208,19 @@ public class HiloCliente extends Thread {
     private boolean procesarEstadoPartida(String msg) {
 
         if (msg.equals("PARTIDA_INICIADA")) {
-            actualizarUI(() -> juego.actualizarPantalla(new PantallaPartida(juego, this, config)));
+            actualizarUI(() -> juego.setScreen(new PantallaPartida(juego, this, config)));
             return true;
         }
 
         if (msg.startsWith("STATE;")) {
-            estadoActual = procesarEstadoPartidaInterno(msg.substring(6));
-            System.out.println("Estado actual: " + estadoActual.jugadores.get(0).estaMoviendo);
+            EstadoPartidaCliente nuevoEstado = procesarEstadoPartidaInterno(msg);
+
+            if (estadoActual == null) {
+                estadoActual = nuevoEstado;
+            } else {
+                estadoActual.actualizar(nuevoEstado);
+            }
+
             return true;
         }
 
@@ -229,14 +240,15 @@ public class HiloCliente extends Thread {
         int golesRojo = 0, golesAzul = 0;
 
         // Quitar "STATE;"
-        if(contenido.startsWith("STATE")){
+        if (contenido.startsWith("STATE")) {
             mensaje = contenido.substring("STATE".length());
-        }else {
+        } else {
             mensaje = contenido;
         }
 
         String[] partes = mensaje.split(";");
 
+        ArrayList<String> values = null;
         for (String p : partes) {
 
             // 1) Divido por comas
@@ -249,7 +261,7 @@ public class HiloCliente extends Thread {
 
             // 3) Parsear todos los key=value a solo value
             //    Ej: "x=100" → "100"
-            ArrayList<String> values = new ArrayList<>();
+            values = new ArrayList<>();
 
             for (int i = 1; i < tokens.length; i++) {
                 String token = tokens[i];
@@ -350,10 +362,16 @@ public class HiloCliente extends Thread {
     // DESCONEXIÓN
     // ------------------------------
     private boolean procesarDesconexion(String msg) {
-        if (!msg.equals("PLAYER_DISCONNECTED")) return false;
+        if (msg.startsWith("PLAYER_DISCONNECTED")) {
+            actualizarUI(() -> juego.setScreen(new Inicial(juego)));
+            return true;
+        }
 
-        actualizarUI(() -> juego.volverAlMenuPrincipal());
-        return true;
+        if (msg.equals("PARTIDA_ABORTADA")) {
+            actualizarUI(() -> juego.setScreen(new Inicial(juego)));
+            return true;
+        }
+        return false;
     }
 
 
@@ -505,7 +523,9 @@ public class HiloCliente extends Thread {
         mensaje += "tiempo:" + config.tiempo + ";";
         mensaje += "modo:" + config.modo + ";";
         mensaje += "skin:" + config.skinsJugadores.get(0) + ";";
-        if(config.habilidadesEspeciales.toArray().length != 0) mensaje += "habilidad" + config.habilidadesEspeciales.get(0) + ";";
+        if(config.habilidadesEspeciales.toArray().length != 0)
+            System.out.println(config.habilidadesEspeciales.get(0));
+            mensaje += "habilidad:" + config.habilidadesEspeciales.get(0) + ";";
 
         enviar(mensaje);
     }
@@ -515,10 +535,14 @@ public class HiloCliente extends Thread {
     }
 
     public void detener() {
-        fin = true;
+        fin = true; // ✅ corta el bucle principal
+
         if (socket != null && !socket.isClosed()) {
-            socket.close();
+            socket.close(); // ✅ forzará error en receive()
         }
+
+        Gdx.app.log("HiloCliente", "Hilo marcado para detener y socket cerrado.");
     }
+
 
 }

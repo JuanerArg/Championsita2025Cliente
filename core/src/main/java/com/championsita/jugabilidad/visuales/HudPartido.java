@@ -22,8 +22,8 @@ public class HudPartido {
     }
 
     public void dibujarHud(SpriteBatch batch, EstadoPartidaCliente est) {
-        marcadorRojo.setTexto("" + est.golesRojo);
-        marcadorAzul.setTexto("" + est.golesAzul);
+        marcadorRojo.setTexto("" + est.golesAzul);
+        marcadorAzul.setTexto("" + est.golesRojo);
 
         tiempo.setTexto(String.format("%.1f", est.tiempo));
 

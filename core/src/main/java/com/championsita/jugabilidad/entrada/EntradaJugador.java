@@ -60,7 +60,7 @@ public class EntradaJugador implements InputProcessor {
         msg += "s=" + (sprintPresionado     ? "1" : "0");
 
         cliente.enviar(msg);
-        System.out.println(msg);
+        //System.out.println(msg);
     }
 
     // Métodos no usados

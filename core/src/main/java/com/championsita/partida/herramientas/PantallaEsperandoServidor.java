@@ -37,6 +37,7 @@ public class PantallaEsperandoServidor implements Screen {
 
         // Crear y arrancar cliente en thread separado
         cliente = new HiloCliente(juego);
+        juego.cliente = cliente;
         cliente.start();
 
 
@@ -138,7 +139,7 @@ public class PantallaEsperandoServidor implements Screen {
 
 
     @Override public void resize(int w, int h) { viewport.update(w, h); }
-    @Override public void show() {}
+    @Override public void show() {Gdx.app.log("SHOW", "PantallaEsperandoServidor -> show()");}
     @Override public void hide() {}
     @Override public void pause() {}
     @Override public void resume() {}

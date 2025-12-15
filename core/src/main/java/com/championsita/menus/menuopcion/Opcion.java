@@ -89,7 +89,7 @@ public class Opcion extends Menu {
 
         boolean atras = this.gestorMenu.condicionDentro(x, y, super.atrasSprite);
         if(atras) {
-            super.juego.actualizarPantalla(new Inicial(super.juego));
+            super.juego.setScreen(new Inicial(super.juego));
         }
 
         int cantHovers = this.hover.values().length;

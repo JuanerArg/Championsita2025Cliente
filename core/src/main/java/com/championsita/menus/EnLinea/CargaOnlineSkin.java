@@ -265,6 +265,7 @@ public class CargaOnlineSkin extends Menu implements LobbySync {
             cliente.config.skinsJugadores.add(miSkin);
         }
         if(esEspecial){
+            System.out.println("Se agregan las habilidades al config");
             cliente.config.habilidadesEspeciales.add(String.valueOf(habilidadesLocales[idxHabLocal]));
         }
         juego.actualizarPantalla(new CargaOnlineCampo(juego, cliente));

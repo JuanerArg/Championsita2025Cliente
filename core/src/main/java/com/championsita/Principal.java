@@ -26,22 +26,7 @@ public class Principal extends Game {
         this.indiceMusica = 1;
         this.accionColor = new Color(0, 1, 0, 1);
         this.menu = new Inicial(this);
-        this.actualizarPantalla(this.menu);
-        Gdx.app.addLifecycleListener(new LifecycleListener() {
-            @Override
-            public void pause() {}
-
-            @Override
-            public void resume() {}
-
-            @Override
-            public void dispose() {
-                if (cliente != null) {
-                    cliente.enviar("DISCONNECT");
-                    cliente.detener();
-                }
-            }
-        });
+        this.setScreen(this.menu);
 
     }
 
@@ -61,19 +46,36 @@ public class Principal extends Game {
         }
     }
 
-    public void volverAlMenuPrincipal(){
-        actualizarPantalla(new Inicial(this));
+    public void volverAlMenuPrincipal() {
+        Screen anterior = getScreen();
+        Menu manejadorMenu = new Menu(this);
+        Menu nuevoMenu = new Inicial(this);
+        nuevoMenu.cambiarMenu(true, nuevoMenu);
+
+        nuevoMenu.resize(1024, 768); // <- fuerza resolución correcta
+
+        if (anterior != null && anterior != nuevoMenu) {
+            Gdx.app.postRunnable(anterior::dispose); // <- limpia recursos de la partida
+        }
     }
 
     @Override
     public void dispose() {
+        Gdx.app.log("Principal", "LLAMADO A DISPOSE()");
         if (cliente != null) {
             cliente.enviar("DISCONNECT");
+            try {
+                cliente.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             cliente.detener();
+            Gdx.app.log("Principal", "Cliente detenido correctamente");
         }
-        this.batch.dispose();
+        batch.dispose();
         super.dispose();
     }
+
 
 
     public void setVolumenMusica(float volumenMusica) {

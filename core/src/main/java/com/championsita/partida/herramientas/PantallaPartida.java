@@ -1,8 +1,6 @@
 package com.championsita.partida.herramientas;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,6 +9,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import com.championsita.Principal;
 import com.championsita.jugabilidad.entrada.EntradaJugador;
+import com.championsita.menus.pausa.Pausa;
 import com.championsita.red.HiloCliente;
 import com.championsita.red.EstadoPartidaCliente;
 import com.championsita.menus.herramientas.ConfigCliente;
@@ -19,7 +18,7 @@ import com.championsita.jugabilidad.visuales.*;
 
 import java.util.ArrayList;
 
-public class PantallaPartida implements Screen {
+public class PantallaPartida extends InputAdapter implements Screen {
 
     private final Principal juego;
     private final HiloCliente cliente;
@@ -40,6 +39,8 @@ public class PantallaPartida implements Screen {
 
     private String modoDeJuego;
 
+    private Pausa pausa;
+
     public PantallaPartida(Principal juego, HiloCliente cliente, ConfigCliente config) {
         this.juego = juego;
         this.cliente = cliente;
@@ -59,7 +60,11 @@ public class PantallaPartida implements Screen {
                 Input.Keys.SPACE,
                 Input.Keys.SHIFT_LEFT,
                 this.cliente);
-        Gdx.input.setInputProcessor(inputJugador);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(this);
+        multiplexer.addProcessor(inputJugador);
+        Gdx.input.setInputProcessor(multiplexer);
+        this.pausa = new Pausa(juego, this.cliente);
         inicializarDibujadores();
     }
 
@@ -101,7 +106,9 @@ public class PantallaPartida implements Screen {
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        this.pausa.show();
+    }
 
     // ===========================================
     //               RENDER
@@ -110,17 +117,23 @@ public class PantallaPartida implements Screen {
     public void render(float delta) {
         if (batch.isDrawing()) System.out.println("ERROR: batch quedó abierto");
         EstadoPartidaCliente estado = cliente.estadoActual;
-
-        //inputJugador.enviarInput(cliente);
+        inputJugador.enviarInput(cliente);
 
         if (estado != null) {
 
             // Jugadores
-            for (int i = 0; i < dibJugadores.size(); i++) {
-                dibJugadores.get(i).actualizar(estado.jugadores.get(i));
-                System.out.println("Actualizando estado: " + estado.jugadores.get(i).estaMoviendo);
-                System.out.println("Actualizando estado: " + estado.jugadores.get(i).direccion);
+            if (estado.jugadores.size() == dibJugadores.size()) {
+                for (int i = 0; i < dibJugadores.size(); i++) {
+                    try{
+                        dibJugadores.get(i).actualizar(estado.jugadores.get(i));
+                    }catch (IndexOutOfBoundsException e){
+                        System.err.println("Tamaño de jugadores no coincide: estado=" + estado.jugadores.size() + " dibujadores=" + dibJugadores.size());
+                    }
+                }
+            } else {
+                System.out.println("Tamaño de jugadores no coincide: estado=" + estado.jugadores.size() + " dibujadores=" + dibJugadores.size());
             }
+
 
             // Pelota
             dibPelota.actualizar(estado.pelota);
@@ -171,6 +184,24 @@ public class PantallaPartida implements Screen {
         // HUD
         // ---------------------
         renderizador.renderHudPartido(batch, hud, 1280, 720);
+        this.pausa.renderizar(batch);
+    }
+
+    @Override
+    public boolean keyDown(int key) {
+        return this.pausa.keyDown(key);
+    }
+
+    @Override
+    public boolean mouseMoved(int x, int y) {
+        y = Gdx.graphics.getHeight() - y;
+        return this.pausa.mouseMoved(x, y);
+    }
+
+    @Override
+    public boolean touchUp(int x, int y, int pointer, int button) {
+        y = Gdx.graphics.getHeight() - y;
+        return this.pausa.touchUp(x, y, pointer, button);
     }
 
     @Override public void resize(int w, int h) {
@@ -179,5 +210,10 @@ public class PantallaPartida implements Screen {
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
-    @Override public void dispose() {}
+    @Override
+    public void dispose() {
+        if (shape != null) shape.dispose();
+        Gdx.input.setInputProcessor(null);
+    }
+
 }
