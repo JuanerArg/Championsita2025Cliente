@@ -35,11 +35,12 @@ public class HudPartido {
         tiempo.setTexto(String.format("%.1f", est.tiempo));
 
         if(!Objects.equals(est.ganador, "")){
-            if (!Objects.equals(est.ganador, "EMPATE")) {
-                ganador.setTexto("El equipo " + est.ganador + " a ganado");
-            }
             ganador.setPosition(500, 450);
             ganador.setTexto(est.ganador);
+            if (!Objects.equals(est.ganador, "EMPATE")) {
+                ganador.setPosition(300, 450);
+                ganador.setTexto("El equipo " + est.ganador + " a ganado");
+            }
             ganador.dibujar(batch);
         }
 
