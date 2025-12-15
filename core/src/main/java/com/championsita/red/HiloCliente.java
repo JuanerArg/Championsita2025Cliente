@@ -2,6 +2,7 @@ package com.championsita.red;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
+import com.badlogic.gdx.utils.Timer;
 import com.championsita.Principal;
 import com.championsita.menus.EnLinea.MenuEnLinea;
 import com.championsita.menus.herramientas.ConfigCliente;
@@ -378,6 +379,18 @@ public class HiloCliente extends Thread {
             return true;
         }
 
+        if(msg.startsWith("SERVER_SHUTDOWN")){
+            actualizarUI(() -> {
+                juego.setScreen(new PantallaEsperandoServidor(juego));
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                juego.setScreen(new Inicial(juego));
+            });
+        }
+
         if (msg.equals("PARTIDA_ABORTADA")) {
             actualizarUI(() -> juego.setScreen(new Inicial(juego)));
             return true;
@@ -485,7 +498,18 @@ public class HiloCliente extends Thread {
     private void verificarTimeout() {
         if (estado == EstadoCliente.CONECTADO &&
                 (System.currentTimeMillis() - ultimoPong.get()) > TIMEOUT_MS) {
+            System.out.println("Se cayo el srver");
             estado = EstadoCliente.PERDIDA_CONEXION;
+            actualizarUI(() -> {
+                juego.setScreen(new PantallaEsperandoServidor(juego, this));
+                // Espera 2 segundos antes de ir a la pantalla inicial
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        juego.setScreen(new Inicial(juego));
+                    }
+                }, 5); // 2 segundos de delay
+            });
         }
     }
 

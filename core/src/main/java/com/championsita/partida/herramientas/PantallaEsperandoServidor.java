@@ -11,6 +11,7 @@ import com.championsita.Principal;
 import com.championsita.jugabilidad.constantes.Constantes;
 import com.championsita.jugabilidad.herramientas.Texto;
 import com.championsita.menus.EnLinea.MenuEnLinea;
+import com.championsita.red.EstadoCliente;
 import com.championsita.red.HiloCliente;
 
 import static com.championsita.red.EstadoCliente.CONEXION_ESTABLECIDA;
@@ -27,6 +28,23 @@ public class PantallaEsperandoServidor implements Screen {
     private boolean mostrarBotonReintentar = false;
 
     private Principal juego;
+
+    public PantallaEsperandoServidor(Principal juego, HiloCliente cliente) {
+        this.batch = new SpriteBatch();
+        this.viewport = new FitViewport(1280, 720);
+        this.juego = juego;
+
+        this.texto = new Texto(Constantes.fuente1, 32, Color.WHITE, 2f, Color.BLACK);
+
+        this.cliente = cliente;
+
+        texto.setPosition(
+                Gdx.graphics.getWidth()/4 - (int)(texto.getAncho()),
+                Gdx.graphics.getHeight()/4 - (int)(texto.getAlto())
+        );
+        texto.setTexto("Se perdió la conexión con el servidor.");
+
+    }
 
     public PantallaEsperandoServidor(Principal juego) {
         this.batch = new SpriteBatch();
@@ -46,8 +64,6 @@ public class PantallaEsperandoServidor implements Screen {
                 Gdx.graphics.getWidth()/4 - (int)(texto.getAncho()),
                 Gdx.graphics.getHeight()/4 - (int)(texto.getAlto())
         );
-
-
     }
 
     @Override
